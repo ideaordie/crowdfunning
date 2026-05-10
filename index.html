@@ -54,6 +54,50 @@
       margin: 8px auto 14px;
     }
 
+
+    .brand {
+      align-items: center;
+    }
+
+    .brand-logo {
+      border-radius: 22px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    @media (max-width: 699px) {
+      .brand {
+        gap: 14px;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .brand-logo {
+        width: 82px;
+        height: 82px;
+        border-radius: 20px;
+        flex-shrink: 0;
+      }
+
+      .logo {
+        font-size: clamp(54px, 11vw, 74px) !important;
+        line-height: 0.88;
+      }
+
+      .tagline {
+        font-size: 18px !important;
+        line-height: 1.22;
+        text-align: center;
+        max-width: 320px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .topbar {
+        justify-content: center;
+      }
+    }
+
     .brand-logo {
       width: clamp(58px, 12vw, 94px);
       height: clamp(58px, 12vw, 94px);
@@ -82,12 +126,13 @@
     }
 
     .tagline {
-      margin-top: 8px;
+      margin-top: 10px;
       color: var(--muted);
-      font-size: clamp(13px, 2.8vw, 16px);
-      line-height: 1.3;
-      font-weight: 700;
+      font-size: clamp(15px, 2.8vw, 20px);
+      line-height: 1.28;
+      font-weight: 800;
       letter-spacing: 0.01em;
+      text-align: center;
     }
 
     .top-actions {
@@ -1223,7 +1268,7 @@
               <button class="primary" id="submitFoundationBtn">SUBMIT FOUNDATION</button>
               <button class="nav-btn" id="skipFoundationBtn" style="border-radius:18px;">VIEW TRENDING FOUNDATIONS</button>
             </div>
-            <div class="tiny">In production, this would be moderated, deduplicated, stored in Supabase, and queued into available foundation options.</div>
+            
           </section>
 
           <div class="option-mode-label" id="optionModeLabel"></div>
@@ -1272,7 +1317,7 @@
   </main>
 
   <script>
-    const STORAGE_KEY = "crowd_funning_prototype_v1_2_8";
+    const STORAGE_KEY = "crowd_funning_prototype_v1_2_9";
 
     const COLORS = {
       JOKE: ["#ffd36a", "rgba(255,211,106,0.22)"],
