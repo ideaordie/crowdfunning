@@ -708,7 +708,7 @@
 
     .row-grid > section,
     .row-grid > div > section {
-      height: 100%;
+      height: auto;
     }
 
     .foundation-slot .foundation-panel {
@@ -721,7 +721,7 @@
     }
 
     .directions-progression-row .panel {
-      min-height: 100%;
+      min-height: 0;
     }
 
     @media (min-width: 920px) {
@@ -1293,13 +1293,13 @@
 #directionsPanel.foundation-only {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
-  height: 100% !important;
+  height: auto !important;
 }
 
 #directionsPanel.foundation-only #foundationBox {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
-  height: 100% !important;
+  height: auto !important;
 }
 
 @media (min-width: 920px) {
@@ -1320,6 +1320,31 @@
   #directionsPanel.foundation-only {
     margin-bottom: 0 !important;
   }
+}
+
+
+/* DYNAMIC PANEL HEIGHT FIX */
+.directions-progression-row {
+  align-items: start !important;
+}
+
+.directions-progression-row > section,
+.directions-progression-row > div,
+#directionsPanel,
+#directionsPanel.foundation-only,
+#foundationBox {
+  height: auto !important;
+  min-height: 0 !important;
+  align-self: start !important;
+}
+
+#directionsPanel.completed-hide,
+.completed-hide {
+  display: none !important;
+}
+
+#progression {
+  height: auto !important;
 }
 
 </style>
@@ -1466,7 +1491,7 @@
   </main>
 
   <script>
-    const STORAGE_KEY = "crowd_funning_prototype_v1_4_1";
+    const STORAGE_KEY = "crowd_funning_prototype_v1_4_3";
 
     const COLORS = {
       JOKE: ["#ffd36a", "rgba(255,211,106,0.22)"],
@@ -1662,6 +1687,7 @@
           progression: [],
           phase: "foundation_submit",
           foundationSubmitted: false,
+          submissionCount: 0,
           submitVotes: 0,
           completeVotes: 0,
           progressionThreshold: 4,
@@ -1922,6 +1948,7 @@
           return;
         }
         submittedText = result.text;
+        cat.submissionCount = (cat.submissionCount || 0) + 1;
       }
 
       const baseOptions = [SEEDS[cat.name].prompt, ...SEEDS[cat.name].options.slice(0, 2)];
@@ -1971,6 +1998,7 @@
 
       // Only Frontier Panel submissions count as NEW DIRECTION votes for the completion ratio.
       cat.submitVotes = (cat.submitVotes || 0) + 1;
+      cat.submissionCount = (cat.submissionCount || 0) + 1;
 
       const fallbackSets = presetOptionSets[cat.name] || [];
       const filler = fallbackSets.flat().filter(text => text !== result.text);
@@ -2006,8 +2034,9 @@
       const totalFinishVotes = (cat.submitVotes || 0) + cat.completeVotes;
       const completePct = totalFinishVotes ? Math.round((cat.completeVotes / totalFinishVotes) * 100) : 0;
       const thresholdMet = cat.progression.length >= (cat.progressionThreshold || 4);
+      const collaborationMet = (cat.submissionCount || 0) > 1;
 
-      if (!thresholdMet || completePct < 60) {
+      if (!thresholdMet || !collaborationMet || completePct < 60) {
         cat.frontierOpen = false;
         cat.options = [];
         saveState();
@@ -2028,6 +2057,7 @@
         completedAt: cat.completedAt,
         selections: cat.selections,
         completionShare: completePct,
+        submissionCount: cat.submissionCount || 0,
         progression: [...cat.progression]
       });
 
@@ -2092,7 +2122,9 @@
         sub.textContent = "This category has been stored in Completed Categories.";
       } else if (cat.frontierOpen) {
         headline.textContent = `${name} UNLOCKED`;
-        sub.textContent = "The Frontier Panel is open. Continue or complete this category.";
+        sub.textContent = (cat.submissionCount || 0) > 1
+          ? "The Frontier Panel is open. This entry has enough submissions to complete if COMPLETE reaches 60%."
+          : "The Frontier Panel is open. More than one submission is required before this entry can complete.";
       } else if (cat.phase === "foundation_submit") {
         headline.textContent = `${name} FOUNDATION NEEDED`;
         sub.textContent = "Submit a possible beginning before reviewing trending foundations.";
@@ -2173,7 +2205,7 @@
                   <button class="archive-summary" data-target="${detailId}">
                     <span class="archive-entry-title">${item.completedName || generateCompletedName(item.name, item.progression)}</span>
                     <span class="archive-entry-meta">${item.name} COMPLETE • ${item.completedAt}</span>
-                    <span class="archive-entry-meta">${item.selections.toLocaleString()} selections${item.completionShare ? " • " + item.completionShare + "% COMPLETE vote" : ""} • TAP TO EXPAND</span>
+                    <span class="archive-entry-meta">${item.selections.toLocaleString()} selections${item.submissionCount ? " • " + item.submissionCount + " submissions" : ""}${item.completionShare ? " • " + item.completionShare + "% COMPLETE vote" : ""} • TAP TO EXPAND</span>
                   </button>
                   <div class="archive-details" id="${detailId}">
                     <div class="progression" style="max-height:360px;overflow:auto;margin-top:10px;padding-right:4px;">
@@ -2230,6 +2262,20 @@
       renderMain();
       renderArchive();
       updateCharCounters();
+
+      requestAnimationFrame(() => {
+        const panels = [
+          document.getElementById("directionsPanel"),
+          document.getElementById("foundationBox"),
+          document.getElementById("progression")
+        ];
+
+        panels.forEach(panel => {
+          if (!panel) return;
+          panel.style.height = "auto";
+          panel.style.minHeight = "0";
+        });
+      });
     }
 
 
