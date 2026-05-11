@@ -1365,6 +1365,8 @@ const supabase = window.supabase.createClient(
   SUPABASE_ANON_KEY
 );
 
+window.crowdFunningSupabase = supabase;
+
 async function initializeSupabaseAuth() {
 
   const {
@@ -1544,6 +1546,27 @@ initializeSupabaseAuth();
       CONSPIRACY: ["#ff5e73", "rgba(255,94,115,0.24)"],
       CHARACTER: ["#b98cff", "rgba(185,140,255,0.23)"]
     };
+
+    function colorForCategory(category) {
+      if (COLORS[category]) return COLORS[category];
+
+      const palette = [
+        ["#ff4fd8", "rgba(255,79,216,0.22)"],
+        ["#70d7ff", "rgba(112,215,255,0.22)"],
+        ["#7dffbd", "rgba(125,255,189,0.22)"],
+        ["#ffd36a", "rgba(255,211,106,0.22)"],
+        ["#b98cff", "rgba(185,140,255,0.23)"],
+        ["#ffb45e", "rgba(255,180,94,0.22)"]
+      ];
+
+      let hash = 0;
+      String(category || "").split("").forEach(char => {
+        hash = ((hash << 5) - hash) + char.charCodeAt(0);
+        hash |= 0;
+      });
+
+      return palette[Math.abs(hash) % palette.length];
+    }
 
     const SEEDS = {
       JOKE: {
@@ -1748,7 +1771,12 @@ initializeSupabaseAuth();
           }))
         };
       });
-      return { activeCategory: null, categories, archive: [] };
+      return {
+        activeCategory: null,
+        categories,
+        categoryOrder: Object.keys(categories),
+        archive: []
+      };
     }
 
 
@@ -1770,8 +1798,89 @@ initializeSupabaseAuth();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
+    function createCategoryState(name, index = 0) {
+      const seed = SEEDS[name] || {
+        prompt: `The crowd begins developing a new ${name.toLowerCase()} entry.`,
+        options: [
+          `The first ${name.toLowerCase()} direction takes an unexpected turn.`,
+          `Someone adds a stranger possibility to the ${name.toLowerCase()} path.`,
+          `The crowd discovers the ${name.toLowerCase()} idea may be bigger than expected.`
+        ]
+      };
+
+      return {
+        name,
+        selections: [18421, 9233, 14008, 31774, 11902][index] || 0,
+        completed: false,
+        completedAt: null,
+        prompt: seed.prompt,
+        progression: [],
+        phase: "foundation_submit",
+        foundationSubmitted: false,
+        submissionCount: 0,
+        submitVotes: 0,
+        completeVotes: 0,
+        progressionThreshold: 4,
+        optionSetIndex: 0,
+        frontierOpen: false,
+        options: [seed.prompt, ...(seed.options || []).slice(0, 2)].map((text, i) => ({
+          id: `${name}-${i}-${Date.now()}`,
+          text,
+          up: 10 + Math.floor(Math.random() * 18),
+          down: 2 + Math.floor(Math.random() * 8),
+          isNew: i === 2,
+          originator: "",
+          chosen: false
+        }))
+      };
+    }
+
+    async function loadCategoriesFromSupabase() {
+      const supabaseClient = window.crowdFunningSupabase;
+      if (!supabaseClient) {
+        console.warn("Supabase client unavailable. Using local categories.");
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from("categories")
+        .select("slug,label,sort_order,is_active")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+
+      if (error) {
+        console.error("Supabase category load failed. Using local categories.", error);
+        return;
+      }
+
+      if (!Array.isArray(data) || !data.length) return;
+
+      const orderedNames = data.map(cat => String(cat.label || cat.slug || "").toUpperCase()).filter(Boolean);
+      state.categoryOrder = orderedNames;
+      state.categories = state.categories || {};
+
+      orderedNames.forEach((name, index) => {
+        if (!state.categories[name]) {
+          state.categories[name] = createCategoryState(name, index);
+        }
+      });
+
+      Object.keys(state.categories).forEach(name => {
+        if (!orderedNames.includes(name) && !state.categories[name].progression?.length) {
+          delete state.categories[name];
+        }
+      });
+
+      if (state.activeCategory && !state.categories[state.activeCategory]) {
+        state.activeCategory = null;
+      }
+
+      saveState();
+      console.log("CROWD FUNNING categories loaded from Supabase:", orderedNames);
+    }
+
     function setAccent(category) {
-      const [accent, soft] = COLORS[category] || ["#ffffff", "rgba(255,255,255,0.18)"];
+      const [accent, soft] = colorForCategory(category) || ["#ffffff", "rgba(255,255,255,0.18)"];
       document.documentElement.style.setProperty("--accent", accent);
       document.documentElement.style.setProperty("--accent-soft", soft);
     }
@@ -1781,7 +1890,10 @@ initializeSupabaseAuth();
       const panel = document.getElementById("categoryPanel");
       if (panel) panel.classList.toggle("compact", !!state.activeCategory);
       list.innerHTML = "";
-      const categoryArray = Object.values(state.categories);
+      const order = state.categoryOrder || Object.keys(state.categories || {});
+      const categoryArray = order
+        .map(name => state.categories[name])
+        .filter(Boolean);
       const sortedCategories = state.activeCategory
         ? [...categoryArray].sort((a, b) => a.name === state.activeCategory ? -1 : b.name === state.activeCategory ? 1 : 0)
         : categoryArray;
@@ -1789,8 +1901,9 @@ initializeSupabaseAuth();
       sortedCategories.forEach(cat => {
         const card = document.createElement("div");
         card.className = "cat-card" + (state.activeCategory === cat.name ? " selected" : "");
-        card.style.setProperty("--accent", COLORS[cat.name][0]);
-        card.style.setProperty("--accent-soft", COLORS[cat.name][1]);
+        const [catAccent, catSoft] = colorForCategory(cat.name);
+        card.style.setProperty("--accent", catAccent);
+        card.style.setProperty("--accent-soft", catSoft);
         card.innerHTML = `
           <div class="cat-name">${cat.name}</div>
           <div class="count">${cat.selections.toLocaleString()} selections</div>
@@ -1804,6 +1917,7 @@ initializeSupabaseAuth();
 
     function selectCategory(name) {
       const cat = state.categories[name];
+      if (!cat) return;
       state.activeCategory = name;
       cat.selections += 1;
       saveState();
@@ -1995,7 +2109,8 @@ initializeSupabaseAuth();
         cat.submissionCount = (cat.submissionCount || 0) + 1;
       }
 
-      const baseOptions = [SEEDS[cat.name].prompt, ...SEEDS[cat.name].options.slice(0, 2)];
+      const seed = SEEDS[cat.name] || { prompt: cat.prompt, options: (cat.options || []).map(option => option.text || option).slice(0, 2) };
+      const baseOptions = [seed.prompt, ...(seed.options || []).slice(0, 2)];
       const foundationOptions = submittedText ? [submittedText, ...baseOptions.slice(0, 2)] : baseOptions;
 
       cat.options = foundationOptions.slice(0, 3).map((text, i) => ({
@@ -2195,9 +2310,9 @@ initializeSupabaseAuth();
         searchInput.value = archiveSearch;
       }
 
-      const categories = ["ALL", ...Object.keys(SEEDS)];
+      const categories = ["ALL", ...(state.categoryOrder || Object.keys(state.categories || SEEDS))];
       filters.innerHTML = categories.map(name => `
-        <button class="filter-chip ${archiveFilter === name ? "active" : ""}" data-filter="${name}" style="${name !== "ALL" ? `--accent:${COLORS[name][0]};--accent-soft:${COLORS[name][1]};` : ""}">
+        <button class="filter-chip ${archiveFilter === name ? "active" : ""}" data-filter="${name}" style="${name !== "ALL" ? `--accent:${colorForCategory(name)[0]};--accent-soft:${colorForCategory(name)[1]};` : ""}">
           ${name}
         </button>
       `).join("");
@@ -2237,7 +2352,7 @@ initializeSupabaseAuth();
       list.innerHTML = Object.keys(grouped).map(groupName => {
         const groupItems = grouped[groupName];
         return `
-          <div class="archive-group" style="--accent:${COLORS[groupName][0]};--accent-soft:${COLORS[groupName][1]};">
+          <div class="archive-group" style="--accent:${colorForCategory(groupName)[0]};--accent-soft:${colorForCategory(groupName)[1]};">
             <div class="archive-group-title">
               <span>${groupName}</span>
               <span class="archive-count-pill">${groupItems.length} completed</span>
@@ -2257,7 +2372,7 @@ initializeSupabaseAuth();
                         const text = entry.text || entry;
                         const originator = entry.originator || "";
                         return `
-                          <div class="step" style="--accent:${COLORS[item.name][0]}">
+                          <div class="step" style="--accent:${colorForCategory(item.name)[0]}">
                             <div class="step-number">${i === 0 ? "FOUNDATION" : "STEP " + i}</div>
                             <div class="step-text">${text}</div>
                             ${attributionHtml(originator)}
@@ -2352,8 +2467,13 @@ initializeSupabaseAuth();
     document.getElementById("foundationInput").addEventListener("input", updateCharCounters);
     document.getElementById("frontierInput").addEventListener("input", updateCharCounters);
 
-    renderAll();
-    updateCharCounters();
+    async function bootApp() {
+      await loadCategoriesFromSupabase();
+      renderAll();
+      updateCharCounters();
+    }
+
+    bootApp();
   </script>
 
 
