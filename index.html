@@ -1366,6 +1366,9 @@ const supabase = window.supabase.createClient(
 );
 
 window.crowdFunningSupabase = supabase;
+console.log('CROWD FUNNING: global Supabase client ready');
+
+window.crowdFunningSupabase = supabase;
 
 async function initializeSupabaseAuth() {
 
@@ -1837,10 +1840,13 @@ initializeSupabaseAuth();
 
     async function loadCategoriesFromSupabase() {
       const supabaseClient = window.crowdFunningSupabase;
+
       if (!supabaseClient) {
-        console.warn("Supabase client unavailable. Using local categories.");
-        return;
+        console.warn("CROWD FUNNING: Supabase client unavailable. Using local categories.");
+        return false;
       }
+
+      console.log("CROWD FUNNING: requesting live categories from Supabase...");
 
       const { data, error } = await supabaseClient
         .from("categories")
@@ -1849,34 +1855,41 @@ initializeSupabaseAuth();
         .order("sort_order", { ascending: true });
 
       if (error) {
-        console.error("Supabase category load failed. Using local categories.", error);
-        return;
+        console.error("CROWD FUNNING: Supabase category load failed. Using local categories.", error);
+        return false;
       }
 
-      if (!Array.isArray(data) || !data.length) return;
+      console.log("CROWD FUNNING: raw Supabase categories:", data);
 
-      const orderedNames = data.map(cat => String(cat.label || cat.slug || "").toUpperCase()).filter(Boolean);
-      state.categoryOrder = orderedNames;
-      state.categories = state.categories || {};
+      if (!Array.isArray(data) || !data.length) {
+        console.warn("CROWD FUNNING: no active categories returned from Supabase.");
+        return false;
+      }
+
+      const orderedNames = data
+        .map(cat => String(cat.label || cat.slug || "").trim().toUpperCase())
+        .filter(Boolean);
+
+      const nextCategories = {};
 
       orderedNames.forEach((name, index) => {
-        if (!state.categories[name]) {
-          state.categories[name] = createCategoryState(name, index);
-        }
+        const existing = state.categories && state.categories[name];
+        nextCategories[name] = existing || createCategoryState(name, index);
+        nextCategories[name].name = name;
       });
 
-      Object.keys(state.categories).forEach(name => {
-        if (!orderedNames.includes(name) && !state.categories[name].progression?.length) {
-          delete state.categories[name];
-        }
-      });
+      state.categories = nextCategories;
+      state.categoryOrder = orderedNames;
 
       if (state.activeCategory && !state.categories[state.activeCategory]) {
         state.activeCategory = null;
       }
 
       saveState();
-      console.log("CROWD FUNNING categories loaded from Supabase:", orderedNames);
+
+      console.log("CROWD FUNNING: live categories rendered:", orderedNames);
+
+      return true;
     }
 
     function setAccent(category) {
@@ -2468,7 +2481,14 @@ initializeSupabaseAuth();
     document.getElementById("frontierInput").addEventListener("input", updateCharCounters);
 
     async function bootApp() {
-      await loadCategoriesFromSupabase();
+      const liveCategoriesLoaded = await loadCategoriesFromSupabase();
+
+      if (liveCategoriesLoaded) {
+        console.log("CROWD FUNNING: Supabase category sync complete.");
+      } else {
+        console.warn("CROWD FUNNING: using fallback local categories.");
+      }
+
       renderAll();
       updateCharCounters();
     }
