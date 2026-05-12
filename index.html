@@ -2430,7 +2430,7 @@
       cat.frontierOpen = false;
     }
 
-    function submitFoundation(skipOnly = false) {
+    async function submitFoundation(skipOnly = false) {
       const cat = state.categories[state.activeCategory];
       if (!cat || cat.completed || cat.phase !== "foundation_submit") return;
 
@@ -2447,8 +2447,78 @@
           alert(result.reason);
           return;
         }
+
         submittedText = result.text;
         cat.submissionCount = (cat.submissionCount || 0) + 1;
+      }
+
+      if (state.activeCategory === "JOKE") {
+        if (submittedText) {
+          try {
+            let userId = state.currentUserId;
+
+            if (!userId) {
+              const user = await initializeSupabaseAuth();
+              userId = user && user.id;
+            }
+
+            if (!userId) {
+              console.error("CROWD FUNNING: cannot submit foundation without a user id.");
+              alert("Foundation submission failed. Please reload and try again.");
+              return;
+            }
+
+            const { data: entryRows, error: entryError } = await crowdFunningSupabase
+              .from("active_entry_directions")
+              .select("entry_id")
+              .eq("category_slug", "joke")
+              .limit(1);
+
+            if (entryError || !entryRows || !entryRows.length) {
+              console.error("CROWD FUNNING: could not find active JOKE entry.", entryError);
+              alert("Foundation submission failed. Active JOKE entry was not found.");
+              return;
+            }
+
+            const { error: submitError } = await crowdFunningSupabase.rpc("submit_foundation_option", {
+              p_user_id: userId,
+              p_entry_id: entryRows[0].entry_id,
+              p_content: submittedText
+            });
+
+            if (submitError) {
+              console.error("CROWD FUNNING: live foundation submission failed:", submitError);
+              alert("Foundation submission failed. Check the console for details.");
+              return;
+            }
+
+            console.log("CROWD FUNNING: live foundation submitted:", submittedText);
+          } catch (err) {
+            console.error("CROWD FUNNING: unexpected foundation submission error:", err);
+            alert("Foundation submission failed unexpectedly. Check the console for details.");
+            return;
+          }
+        }
+
+        cat.phase = "foundation_select";
+        cat.foundationSubmitted = !skipOnly;
+        cat.jokeFoundationGatePassed = true;
+        cat.jokeFirstFoundationCommitted = false;
+        cat.liveCurrentNodeId = null;
+        cat.liveCurrentNodeKey = "ROOT";
+        cat.preselectedOptionIndex = null;
+        cat.preselectedDirectionId = null;
+        cat.preselectedDirectionText = "";
+        cat.preselectedOptionKey = null;
+
+        input.value = "";
+        handleInput.value = "";
+        updateCharCounters();
+        saveState();
+        renderAll();
+
+        await loadJokeAfterFoundationGate();
+        return;
       }
 
       const baseOptions = [SEEDS[cat.name].prompt, ...SEEDS[cat.name].options.slice(0, 2)];
@@ -2467,21 +2537,11 @@
       cat.phase = "foundation_select";
       cat.foundationSubmitted = !skipOnly;
 
-      if (state.activeCategory === "JOKE") {
-        cat.jokeFoundationGatePassed = true;
-        cat.liveCurrentNodeId = null;
-        cat.liveCurrentNodeKey = "ROOT";
-      }
-
       input.value = "";
       handleInput.value = "";
       updateCharCounters();
       saveState();
       renderAll();
-
-      if (state.activeCategory === "JOKE") {
-        loadJokeAfterFoundationGate();
-      }
     }
 
     async function loadJokeAfterFoundationGate() {
