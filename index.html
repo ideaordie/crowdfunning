@@ -2378,10 +2378,26 @@
       cat.currentPathId = data;
       cat.currentPathKey = pathKey;
 
+      const { data: pathRows, error: pathError } = await crowdFunningSupabase
+        .from("progression_paths")
+        .select("complete_votes,new_direction_votes,status")
+        .eq("id", data)
+        .limit(1);
+
+      if (!pathError && pathRows && pathRows.length) {
+        cat.completeVotes = Number(pathRows[0].complete_votes || 0);
+        cat.submitVotes = Number(pathRows[0].new_direction_votes || 0);
+        cat.pathStatus = pathRows[0].status || "active";
+      } else if (pathError) {
+        console.error("CROWD FUNNING: progression path count fetch failed:", pathError);
+      }
+
       console.log("CROWD FUNNING: progression path synced:", {
         pathId: data,
         pathKey,
-        itemCount: pathItems.length
+        itemCount: pathItems.length,
+        completeVotes: cat.completeVotes || 0,
+        newDirectionVotes: cat.submitVotes || 0
       });
 
       return data;
