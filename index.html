@@ -2050,7 +2050,8 @@
             optionLevel: Number(row.option_level || 0),
             directionType: row.direction_type,
             nextNodeId: row.next_node_id || null,
-            nextNodeKey: row.next_node_key || null
+            nextNodeKey: row.next_node_key || null,
+            attributionHandle: row.attribution_handle || ""
           }))
         };
 
@@ -2070,14 +2071,15 @@
           score: direction.score,
           selectionCount: direction.selectionCount,
           isNew: false,
-          originator: "SUPABASE",
+          originator: direction.attributionHandle || "Anonymous",
           chosen: false,
           liveDirectionId: direction.id,
           optionKey: direction.optionKey,
           optionLevel: direction.optionLevel,
           directionType: direction.directionType,
           nextNodeId: direction.nextNodeId,
-          nextNodeKey: direction.nextNodeKey
+          nextNodeKey: direction.nextNodeKey,
+          attributionHandle: direction.attributionHandle || ""
         }));
 
         cat.phase = cat.jokeFirstFoundationCommitted ? "direction_select" : "foundation_select";
@@ -2483,7 +2485,8 @@
             const { error: submitError } = await crowdFunningSupabase.rpc("submit_foundation_option", {
               p_user_id: userId,
               p_entry_id: entryRows[0].entry_id,
-              p_content: submittedText
+              p_content: submittedText,
+              p_attribution_handle: submittedHandle
             });
 
             if (submitError) {
