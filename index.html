@@ -2465,39 +2465,45 @@
             }
 
             if (!userId) {
-              console.error("CROWD FUNNING: cannot submit foundation without a user id.");
+              console.error("CROWD FUNNING: cannot create pending foundation without a user id.");
               alert("Foundation submission failed. Please reload and try again.");
               return;
             }
 
-            const { data: entryRows, error: entryError } = await crowdFunningSupabase
+            const { data: rootRows, error: rootError } = await crowdFunningSupabase
               .from("active_entry_directions")
-              .select("entry_id")
+              .select("entry_id,node_id")
               .eq("category_slug", "joke")
+              .eq("direction_type", "foundation")
+              .eq("node_key", "ROOT")
               .limit(1);
 
-            if (entryError || !entryRows || !entryRows.length) {
-              console.error("CROWD FUNNING: could not find active JOKE entry.", entryError);
-              alert("Foundation submission failed. Active JOKE entry was not found.");
+            if (rootError || !rootRows || !rootRows.length) {
+              console.error("CROWD FUNNING: could not find active JOKE ROOT node.", rootError);
+              alert("Foundation submission failed. Active JOKE ROOT node was not found.");
               return;
             }
 
-            const { error: submitError } = await crowdFunningSupabase.rpc("submit_foundation_option", {
+            const { error: submitError } = await crowdFunningSupabase.rpc("create_pending_submission", {
               p_user_id: userId,
-              p_entry_id: entryRows[0].entry_id,
+              p_entry_id: rootRows[0].entry_id,
+              p_parent_node_id: rootRows[0].node_id,
               p_content: submittedText,
+              p_submission_type: "foundation",
+              p_direction_type: "foundation",
               p_attribution_handle: submittedHandle
             });
 
             if (submitError) {
-              console.error("CROWD FUNNING: live foundation submission failed:", submitError);
+              console.error("CROWD FUNNING: pending foundation submission failed:", submitError);
               alert("Foundation submission failed. Check the console for details.");
               return;
             }
 
-            console.log("CROWD FUNNING: live foundation submitted:", submittedText);
+            alert("Foundation submitted for review. If approved, it will appear in Trending Foundations.");
+            console.log("CROWD FUNNING: pending foundation submitted:", submittedText);
           } catch (err) {
-            console.error("CROWD FUNNING: unexpected foundation submission error:", err);
+            console.error("CROWD FUNNING: unexpected pending foundation submission error:", err);
             alert("Foundation submission failed unexpectedly. Check the console for details.");
             return;
           }
