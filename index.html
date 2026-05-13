@@ -3183,7 +3183,7 @@
               <h2 class="panel-title" style="margin:0;">Submit a foundation</h2>
             </div>
             <div class="instruction" style="margin-top:10px;">OPTIONAL: Before exploring the trending paths, add one possible beginning for this category. Enter your 𝕏 handle for attribution.</div>
-            <input class="handle-input" id="xHandleInput" maxlength="32" placeholder="@yourhandle" />
+            <input class="handle-input" id="xHandleInput" maxlength="32" placeholder="@yourhandle (optional)" />
             <textarea id="foundationInput" maxlength="120" placeholder="Submit a new foundation for this category..."></textarea>
             <div class="submission-helper-row">
               <div class="tiny">Keep submissions short.</div>
@@ -3208,7 +3208,7 @@
 
           <div class="frontier" id="frontierBox">
             
-            <input class="handle-input" id="frontierHandleInput" maxlength="32" placeholder="@yourhandle" />
+            <input class="handle-input" id="frontierHandleInput" maxlength="32" placeholder="@yourhandle (optional)" />
             <textarea id="frontierInput" maxlength="120" placeholder="Submit a new possibility..."></textarea>
             <div class="submission-helper-row">
               <div class="tiny">Keep submissions short.</div>
@@ -4021,7 +4021,7 @@
           options.appendChild(card);
         });
       } else {
-        options.innerHTML = `<div class="empty">No available paths remain. Add a new possibility or vote to complete ${name}.</div>`;
+        options.innerHTML = `<div class="empty">No available paths remain. Add a new path possibility or vote to complete the ${name}.</div>`;
       }
 
       if (cat.frontierOpen) {
