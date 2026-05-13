@@ -3249,6 +3249,21 @@
       </div>
     </section>
 
+    <section id="aboutView" class="hidden">
+      <div class="panel">
+        <div class="section-icon-title">
+          <span class="section-icon">ⓘ</span>
+          <h2 class="panel-title" style="margin:0;">About</h2>
+        </div>
+        <div class="instruction" style="margin-top:10px;">
+          CROWD FUNNING is a collaborative path-building platform for developing the internet’s next viral masterpiece together.
+        </div>
+        <div class="instruction" style="margin-top:10px;">
+          Privacy, notifications, signup, and account options will live here as the platform grows.
+        </div>
+      </div>
+    </section>
+
     <section id="archiveView" class="hidden">
       <div class="panel">
         <h2 class="panel-title">COMPLETED</h2>
@@ -3262,10 +3277,10 @@
 
     
 
-    <div class="appearance-toggle" aria-label="Appearance and reset controls">
+    <div class="appearance-toggle" aria-label="Footer controls">
       <button class="appearance-btn" id="bottomResetBtn" type="button">RESET</button>
-      <button class="appearance-btn active" id="darkModeBtn" type="button">DARK</button>
-      <button class="appearance-btn" id="lightModeBtn" type="button">LIGHT</button>
+      <button class="appearance-btn" id="themeToggleBtn" type="button">LIGHT</button>
+      <button class="appearance-btn" id="aboutBtn" type="button">ABOUT</button>
     </div>
 
   </main>
@@ -5043,6 +5058,7 @@ ${siteUrl}`;
     function showHome() {
       document.getElementById("homeView").classList.remove("hidden");
       document.getElementById("trendingView").classList.add("hidden");
+      document.getElementById("aboutView").classList.add("hidden");
       document.getElementById("archiveView").classList.add("hidden");
       renderAll();
     }
@@ -5050,14 +5066,23 @@ ${siteUrl}`;
     function showTrending() {
       document.getElementById("homeView").classList.add("hidden");
       document.getElementById("trendingView").classList.remove("hidden");
+      document.getElementById("aboutView").classList.add("hidden");
       document.getElementById("archiveView").classList.add("hidden");
     }
 
     function showArchive() {
       document.getElementById("homeView").classList.add("hidden");
       document.getElementById("trendingView").classList.add("hidden");
+      document.getElementById("aboutView").classList.add("hidden");
       document.getElementById("archiveView").classList.remove("hidden");
       renderArchive();
+    }
+
+    function showAbout() {
+      document.getElementById("homeView").classList.add("hidden");
+      document.getElementById("trendingView").classList.add("hidden");
+      document.getElementById("aboutView").classList.remove("hidden");
+      document.getElementById("archiveView").classList.add("hidden");
     }
 
     function resetPrototype() {
@@ -5149,11 +5174,12 @@ ${siteUrl}`;
       const normalized = mode === "light" ? "light" : "dark";
       document.body.classList.toggle("light-mode", normalized === "light");
 
-      const darkBtn = document.getElementById("darkModeBtn");
-      const lightBtn = document.getElementById("lightModeBtn");
+      const themeBtn = document.getElementById("themeToggleBtn");
 
-      if (darkBtn) darkBtn.classList.toggle("active", normalized === "dark");
-      if (lightBtn) lightBtn.classList.toggle("active", normalized === "light");
+      if (themeBtn) {
+        themeBtn.textContent = normalized === "light" ? "DARK" : "LIGHT";
+        themeBtn.classList.toggle("active", true);
+      }
 
       try {
         localStorage.setItem("crowd_funning_appearance_mode", normalized);
@@ -5172,6 +5198,11 @@ ${siteUrl}`;
       }
 
       setAppearanceMode(savedMode);
+    }
+
+    function toggleAppearanceMode() {
+      const isLight = document.body.classList.contains("light-mode");
+      setAppearanceMode(isLight ? "dark" : "light");
     }
 
     document.getElementById("homeBtn").addEventListener("click", showHome);
@@ -5194,8 +5225,8 @@ ${siteUrl}`;
     document.getElementById("frontierInput").addEventListener("input", updateCharCounters);
     document.getElementById("foundationNotifyCheck").addEventListener("change", () => toggleNotifyEmail("foundation"));
     document.getElementById("frontierNotifyCheck").addEventListener("change", () => toggleNotifyEmail("frontier"));
-    document.getElementById("darkModeBtn").addEventListener("click", () => setAppearanceMode("dark"));
-    document.getElementById("lightModeBtn").addEventListener("click", () => setAppearanceMode("light"));
+    document.getElementById("themeToggleBtn").addEventListener("click", toggleAppearanceMode);
+    document.getElementById("aboutBtn").addEventListener("click", showAbout);
 
 
     async function bootApp() {
