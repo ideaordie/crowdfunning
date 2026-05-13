@@ -952,6 +952,13 @@
       font-weight: 1000;
     }
 
+    
+    .section-icon.frontier-icon {
+      font-size: 19px;
+      font-weight: 1000;
+      line-height: 1;
+    }
+
     .section-icon-title {
       display: flex;
       align-items: center;
@@ -1543,7 +1550,7 @@
             <div class="flag">⚑</div>
             <div>
               <div class="progress-headline" id="progressHeadline">CATEGORY WAITING</div>
-              <div class="progress-sub" id="progressSub">Select a category to begin.</div>
+              <div class="progress-sub" id="progressSub">Select a category above to begin.</div>
             </div>
           </div>
 
@@ -1557,7 +1564,7 @@
 
           <div class="vote-meters">
             <div class="meter">
-              <div class="meter-label">New Direction Votes</div>
+              <div class="meter-label">New Path Votes</div>
               <div class="meter-value" id="submitVoteMeter">0</div>
             </div>
             <div class="meter">
@@ -1602,7 +1609,7 @@
               <span class="section-icon">✦</span>
               <h2 class="panel-title" style="margin:0;">Submit a foundation</h2>
             </div>
-            <div class="instruction" style="margin-top:10px;">OPTIONAL: Before exploring the trending path, add one possible beginning for this category. Enter your 𝕏 handle for attribution.</div>
+            <div class="instruction" style="margin-top:10px;">OPTIONAL: Before exploring the trending paths, add one possible beginning for this category. Enter your 𝕏 handle for attribution.</div>
             <input class="handle-input" id="xHandleInput" maxlength="32" placeholder="@yourhandle" />
             <textarea id="foundationInput" maxlength="120" placeholder="Submit a new foundation for this category..."></textarea>
             <div class="char-counter" id="foundationCharCounter">0 / 120</div>
@@ -2293,7 +2300,15 @@
       directionsPanel.style.display = "";
       foundationBox.style.display = "";
       const dirTitle = directionsPanel.querySelector(".section-icon-title");
+      const dirIcon = directionsPanel.querySelector(".section-icon-title .section-icon");
+      const dirTitleText = directionsPanel.querySelector(".section-icon-title .panel-title");
       if (dirTitle) dirTitle.style.display = "";
+      if (dirIcon) {
+        dirIcon.classList.remove("frontier-icon");
+        dirIcon.classList.add("lightning-icon");
+        dirIcon.textContent = "⌁";
+      }
+      if (dirTitleText) dirTitleText.textContent = "Available Paths";
       optionModeLabel.style.display = "";
       options.style.display = "";
       frontier.classList.remove("show");
@@ -2395,7 +2410,17 @@
           options.appendChild(card);
         });
       } else {
-        options.innerHTML = `<div class="empty">No available directions remain. Add a new possibility or vote to complete ${name}.</div>`;
+        options.innerHTML = `<div class="empty">No available paths remain. Add a new possibility or vote to complete ${name}.</div>`;
+      }
+
+      if (cat.frontierOpen) {
+        if (dirIcon) {
+          dirIcon.classList.remove("lightning-icon");
+          dirIcon.classList.add("frontier-icon");
+          dirIcon.textContent = "✦";
+        }
+        if (dirTitleText) dirTitleText.textContent = "Submit a Frontier";
+        optionModeLabel.textContent = "";
       }
 
       frontier.classList.toggle("show", !!cat.frontierOpen && !cat.completeVoteSubmitted);
@@ -3252,7 +3277,7 @@ ${siteUrl}`;
 
       if (!name) {
         headline.textContent = "CATEGORY WAITING";
-        sub.textContent = "Select a category to begin.";
+        sub.textContent = "Select a category above to begin.";
         label.textContent = "0% COMPLETE";
         bar.style.width = "0%";
         submitMeter.textContent = "0";
