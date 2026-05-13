@@ -2345,6 +2345,102 @@
       }
     }
 
+
+    /* Flat X-style panel cleanup: consistent borders, no panel gradients */
+    .panel,
+    .category-progress-card,
+    .category-panel,
+    .story-card,
+    .foundation-panel,
+    .category-card,
+    .option-card,
+    .progression-preview,
+    .meter,
+    .step,
+    .preview-actions {
+      background-image: none !important;
+      box-shadow: none !important;
+      border-radius: 7px !important;
+    }
+
+    body:not(.light-mode) .panel,
+    body:not(.light-mode) .category-progress-card,
+    body:not(.light-mode) .category-panel,
+    body:not(.light-mode) .story-card,
+    body:not(.light-mode) .foundation-panel,
+    body:not(.light-mode) .category-card,
+    body:not(.light-mode) .option-card,
+    body:not(.light-mode) .progression-preview,
+    body:not(.light-mode) .meter,
+    body:not(.light-mode) .step {
+      background: #000000 !important;
+      border: 1px solid #2f3336 !important;
+      color: #e7e9ea;
+    }
+
+    body.light-mode .panel,
+    body.light-mode .category-progress-card,
+    body.light-mode .category-panel,
+    body.light-mode .story-card,
+    body.light-mode .foundation-panel,
+    body.light-mode .category-card,
+    body.light-mode .option-card,
+    body.light-mode .progression-preview,
+    body.light-mode .meter,
+    body.light-mode .step {
+      background: #ffffff !important;
+      border: 1px solid #cfd9de !important;
+      color: #0f1419;
+    }
+
+    body.light-mode .category-progress-card {
+      border: 1px solid #cfd9de !important;
+    }
+
+    body.light-mode .category-list {
+      background: #ffffff !important;
+    }
+
+    body:not(.light-mode) .category-list {
+      background: #000000 !important;
+    }
+
+    body.light-mode .bar-track,
+    body.light-mode .preview-actions {
+      background: #ffffff !important;
+      border-color: #cfd9de !important;
+    }
+
+    body:not(.light-mode) .bar-track,
+    body:not(.light-mode) .preview-actions {
+      background: #000000 !important;
+      border-color: #2f3336 !important;
+    }
+
+    body.light-mode .nav-btn,
+    body.light-mode .primary,
+    body.light-mode .preview-action-btn,
+    body.light-mode .appearance-btn,
+    body.light-mode .filter-chip {
+      background: #ffffff !important;
+      border: 1px solid #cfd9de !important;
+      box-shadow: none !important;
+    }
+
+    body:not(.light-mode) .nav-btn,
+    body:not(.light-mode) .primary,
+    body:not(.light-mode) .preview-action-btn,
+    body:not(.light-mode) .appearance-btn,
+    body:not(.light-mode) .filter-chip {
+      background: #000000 !important;
+      border: 1px solid #2f3336 !important;
+      box-shadow: none !important;
+    }
+
+    .category-card {
+      border-radius: 7px !important;
+    }
+
 </style>
 </head>
 <body>
