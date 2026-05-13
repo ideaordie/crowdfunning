@@ -1525,54 +1525,169 @@
 
 
     body.light-mode {
-      --bg: #f4f1e9;
-      --panel: rgba(255,255,255,0.88);
-      --panel-2: rgba(255,255,255,0.72);
-      --text: #131313;
-      --muted: rgba(20,20,20,0.68);
-      --line: rgba(0,0,0,0.14);
-      background:
-        radial-gradient(circle at 50% 0%, rgba(255,255,255,0.9), transparent 34%),
-        linear-gradient(180deg, #fbf7ed, #e7e1d3 70%, #d9d0c0);
+      --bg: #ffffff;
+      --panel: #ffffff;
+      --panel-2: #ffffff;
+      --text: #0f1419;
+      --muted: #536471;
+      --line: #eff3f4;
+      --good: #00ba7c;
+      --bad: #f91880;
+      background: #ffffff !important;
       color: var(--text);
+    }
+
+    body.light-mode main {
+      background: #ffffff !important;
+    }
+
+    body.light-mode .brand-section,
+    body.light-mode .logo-wrap,
+    body.light-mode .tagline {
+      color: var(--text);
+      text-shadow: none;
+    }
+
+    body.light-mode .logo {
+      color: #0f1419;
+      text-shadow: none;
     }
 
     body.light-mode .panel,
     body.light-mode .category-progress-card,
     body.light-mode .category-panel,
-    body.light-mode .story-card {
-      background:
-        radial-gradient(circle at top left, var(--accent-soft, rgba(0,0,0,0.08)), transparent 40%),
-        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(244,239,229,0.86));
-      box-shadow:
-        0 0 30px var(--accent-soft, rgba(0,0,0,0.08)),
-        0 18px 50px rgba(80,70,50,0.18),
-        inset 0 1px 0 rgba(255,255,255,0.75);
+    body.light-mode .story-card,
+    body.light-mode .foundation-panel,
+    body.light-mode .progression-preview {
+      background: #ffffff !important;
+      background-image: none !important;
+      color: var(--text);
+      border-color: #eff3f4;
+      box-shadow: none !important;
+      backdrop-filter: none;
+    }
+
+    body.light-mode .panel,
+    body.light-mode .category-progress-card {
+      border-width: 1px;
+    }
+
+    body.light-mode .category-card,
+    body.light-mode .option-card,
+    body.light-mode .step,
+    body.light-mode .meter,
+    body.light-mode .bar-track,
+    body.light-mode .preview-actions {
+      background: #ffffff !important;
+      background-image: none !important;
+      color: var(--text);
+      border-color: #eff3f4;
+      box-shadow: none !important;
+    }
+
+    body.light-mode .category-card {
+      border: 1px solid #eff3f4;
+    }
+
+    body.light-mode .category-card.live {
+      border-color: #eff3f4;
     }
 
     body.light-mode .option-card {
-      background:
-        radial-gradient(circle at top left, var(--accent-soft, rgba(0,0,0,0.08)), transparent 32%),
-        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(242,236,226,0.92));
-      border-color: rgba(0,0,0,0.13);
-      color: var(--text);
+      border: 1px solid #cfd9de;
+    }
+
+    body.light-mode .progress-headline,
+    body.light-mode .panel-title,
+    body.light-mode .story-text,
+    body.light-mode .step-text,
+    body.light-mode .category-title,
+    body.light-mode .meter-value {
+      color: #0f1419 !important;
+      text-shadow: none !important;
+    }
+
+    body.light-mode .progress-sub,
+    body.light-mode .instruction,
+    body.light-mode .preview-text,
+    body.light-mode .empty,
+    body.light-mode .bar-label-row,
+    body.light-mode .meter-label,
+    body.light-mode .category-meta,
+    body.light-mode .step-number,
+    body.light-mode .tiny,
+    body.light-mode .char-counter {
+      color: #536471 !important;
+      opacity: 1 !important;
+      text-shadow: none !important;
+    }
+
+    body.light-mode .section-icon,
+    body.light-mode .flag {
+      background: #ffffff !important;
+      color: var(--accent, #1d9bf0);
+      border-color: #cfd9de;
+      box-shadow: none !important;
+    }
+
+    body.light-mode .bar-fill {
+      background: var(--accent, #1d9bf0);
+      box-shadow: none;
     }
 
     body.light-mode textarea,
     body.light-mode input,
     body.light-mode .archive-search {
-      background: rgba(255,255,255,0.74);
-      color: var(--text);
-      border-color: rgba(0,0,0,0.16);
+      background: #ffffff !important;
+      color: #0f1419;
+      border-color: #cfd9de;
+      box-shadow: none;
+    }
+
+    body.light-mode textarea::placeholder,
+    body.light-mode input::placeholder {
+      color: #536471;
     }
 
     body.light-mode .preview-action-btn,
     body.light-mode .nav-btn,
-    body.light-mode .filter-chip {
-      background: rgba(255,255,255,0.68);
-      color: var(--text);
-      border-color: rgba(0,0,0,0.16);
+    body.light-mode .filter-chip,
+    body.light-mode .primary {
+      background: #ffffff !important;
+      color: #0f1419;
+      border-color: #cfd9de;
+      box-shadow: none !important;
+      text-shadow: none;
     }
+
+    body.light-mode .preview-action-btn:hover,
+    body.light-mode .nav-btn:hover,
+    body.light-mode .primary:hover {
+      background: #f7f9f9 !important;
+      border-color: #cfd9de;
+    }
+
+    body.light-mode .preview-action-btn.active,
+    body.light-mode .nav-btn.active,
+    body.light-mode .filter-chip.active {
+      color: var(--accent, #1d9bf0);
+      background: #e8f5fd !important;
+      border-color: var(--accent, #1d9bf0);
+    }
+
+
+    body:not(.light-mode) {
+      background: #000000;
+    }
+
+    body:not(.light-mode) .panel,
+    body:not(.light-mode) .category-progress-card,
+    body:not(.light-mode) .category-panel,
+    body:not(.light-mode) .story-card,
+    body:not(.light-mode) .foundation-panel {
+      border-color: rgba(239,243,244,0.18);
+    }
+
 
     .appearance-toggle {
       display: flex;
