@@ -3000,7 +3000,11 @@
     }
 
 
-    /* Bottom RESET / DARK / LIGHT controls match top navigation buttons */
+    /* Bottom RESET / DARK / LIGHT controls match top navigation buttons safely */
+    .hidden-reset {
+      display: none !important;
+    }
+
     .appearance-toggle {
       display: flex !important;
       justify-content: center !important;
@@ -3062,6 +3066,7 @@
       <button class="nav-btn" id="homeBtn">DEVELOP</button>
       <button class="nav-btn" id="trendingBtn">TRENDING</button>
       <button class="nav-btn" id="archiveBtn">COMPLETED</button>
+      <button class="nav-btn hidden-reset" id="resetBtn">RESET</button>
     </div>
 
     <section id="homeView">
@@ -3201,7 +3206,7 @@
     
 
     <div class="appearance-toggle" aria-label="Appearance and reset controls">
-      <button class="appearance-btn" id="resetBtn" type="button">RESET</button>
+      <button class="appearance-btn" id="bottomResetBtn" type="button">RESET</button>
       <button class="appearance-btn active" id="darkModeBtn" type="button">DARK</button>
       <button class="appearance-btn" id="lightModeBtn" type="button">LIGHT</button>
     </div>
@@ -5046,6 +5051,7 @@ ${siteUrl}`;
     document.getElementById("trendingBtn").addEventListener("click", showTrending);
     document.getElementById("archiveBtn").addEventListener("click", showArchive);
     document.getElementById("resetBtn").addEventListener("click", resetPrototype);
+    document.getElementById("bottomResetBtn").addEventListener("click", resetPrototype);
     document.getElementById("addPossibilityBtn").addEventListener("click", addPossibility);
     document.getElementById("completeBtn").addEventListener("click", completeCategory);
     document.getElementById("submitFoundationBtn").addEventListener("click", () => submitFoundation(false));
