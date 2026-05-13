@@ -4529,7 +4529,7 @@
         const totalFinishVotes = (cat.submitVotes || 0) + (cat.completeVotes || 0);
         const completePct = totalFinishVotes ? Math.round(((cat.completeVotes || 0) / totalFinishVotes) * 100) : 0;
         const thresholdMet = cat.progression.length >= (cat.progressionThreshold || 4);
-        const collaborationMet = (cat.submissionCount || 0) > 1;
+        const collaborationMet = (cat.submissionCount || 0) >= 3;
 
         if (!thresholdMet || !collaborationMet || completePct < 60) {
           cat.frontierOpen = false;
@@ -4567,7 +4567,7 @@
       const totalFinishVotes = (cat.submitVotes || 0) + cat.completeVotes;
       const completePct = totalFinishVotes ? Math.round((cat.completeVotes / totalFinishVotes) * 100) : 0;
       const thresholdMet = cat.progression.length >= (cat.progressionThreshold || 4);
-      const collaborationMet = (cat.submissionCount || 0) > 1;
+      const collaborationMet = (cat.submissionCount || 0) >= 3;
 
       if (!thresholdMet || !collaborationMet || completePct < 60) {
         cat.frontierOpen = false;
@@ -4774,7 +4774,7 @@ ${siteUrl}`;
         headline.textContent = `${name} UNLOCKED`;
         sub.textContent = (cat.submissionCount || 0) > 1
           ? "The Frontier Panel is open. This entry has enough submissions to complete if COMPLETE reaches 60%."
-          : "The Frontier Panel is open. More than one submission is required before this entry can complete.";
+          : "The Frontier Panel is open. At least 3 new path submissions are required before this entry can complete.";
       } else if (cat.phase === "foundation_submit") {
         headline.textContent = `${name} FOUNDATION NEEDED`;
         sub.textContent = "Submit a possible beginning before reviewing trending foundations.";
