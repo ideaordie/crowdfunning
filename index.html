@@ -1514,6 +1514,15 @@
       display: flex;
     }
 
+
+    #options:empty {
+      display: none;
+    }
+
+    #optionModeLabel:empty {
+      display: none;
+    }
+
 </style>
 </head>
 <body>
@@ -1527,7 +1536,7 @@
   </div>
 
   <div class="tagline">
-    Develop the internet’s next<br>questionable masterpiece.
+    Develop the internet’s next<br>masterpiece together.
   </div>
 </section>
 
@@ -2320,6 +2329,9 @@
         badge.textContent = "SELECT A CATEGORY";
         storyText.textContent = "Choose what the crowd should develop first.";
         instruction.textContent = "The first action after category selection is to submit a possible foundation.";
+        optionModeLabel.style.display = "none";
+        options.style.display = "none";
+        options.innerHTML = "";
         if (thresholdNote) thresholdNote.textContent = "";
         renderProgression();
         renderCategoryProgress();
