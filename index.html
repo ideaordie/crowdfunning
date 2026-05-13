@@ -2764,6 +2764,41 @@
       background: #000000 !important;
     }
 
+
+    /* Submission helper row and input spacing refinement */
+    .submission-helper-row,
+    .helper-row,
+    .input-helper-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 12px !important;
+      width: 100% !important;
+    }
+
+    .submission-helper-row .tiny,
+    .helper-row .tiny,
+    .input-helper-row .tiny {
+      flex: 1 1 auto !important;
+      text-align: left !important;
+    }
+
+    .submission-helper-row .char-counter,
+    .helper-row .char-counter,
+    .input-helper-row .char-counter {
+      flex: 0 0 auto !important;
+      text-align: right !important;
+      white-space: nowrap !important;
+    }
+
+    input[type="text"] + textarea,
+    .x-handle-input + textarea,
+    .handle-input + textarea,
+    #foundationHandle + #foundationInput,
+    #frontierHandle + #frontierInput {
+      margin-top: 10px !important;
+    }
+
 </style>
 </head>
 <body>
@@ -2862,7 +2897,7 @@
             <input class="handle-input" id="xHandleInput" maxlength="32" placeholder="@yourhandle" />
             <textarea id="foundationInput" maxlength="120" placeholder="Submit a new foundation for this category..."></textarea>
             <div class="char-counter" id="foundationCharCounter">0 / 120</div>
-            <div class="tiny">Keep submissions short — ideally one sentence. Maximum 120 characters.</div>
+            <div class="tiny">Keep submissions short. Maximum 120 characters..</div>
             <div class="foundation-actions">
               <button class="primary" id="submitFoundationBtn">SUBMIT FOUNDATION</button>
               <button class="nav-btn" id="skipFoundationBtn" style="border-radius:18px;">VIEW TRENDING FOUNDATIONS</button>
@@ -2878,7 +2913,7 @@
             <input class="handle-input" id="frontierHandleInput" maxlength="32" placeholder="@yourhandle" />
             <textarea id="frontierInput" maxlength="120" placeholder="Submit a new possibility..."></textarea>
             <div class="char-counter" id="frontierCharCounter">0 / 120</div>
-            <div class="tiny">Keep submissions short — ideally one sentence. Maximum 120 characters.</div>
+            <div class="tiny">Keep submissions short. Maximum 120 characters..</div>
             <div class="frontier-actions">
               <button class="primary" id="addPossibilityBtn">SUBMIT POSSIBILITY</button>
               <button class="primary danger complete-btn locked" id="completeBtn">CATEGORY COMPLETE</button>
