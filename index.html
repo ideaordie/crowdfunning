@@ -3088,6 +3088,55 @@
       display: none !important;
     }
 
+
+    /* Align AVAILABLE PATHS subtitles with title text */
+    .available-paths-subtitle,
+    .foundations-subtitle,
+    .directions-subtitle {
+      margin-left: 118px !important;
+      padding-left: 0 !important;
+      text-align: left !important;
+      display: block !important;
+      width: calc(100% - 118px) !important;
+      box-sizing: border-box !important;
+    }
+
+    @media (max-width: 640px) {
+      .available-paths-subtitle,
+      .foundations-subtitle,
+      .directions-subtitle {
+        margin-left: 96px !important;
+        width: calc(100% - 96px) !important;
+      }
+    }
+
+
+    /* Precise AVAILABLE PATHS subtitle alignment */
+    .available-paths-panel .section-subtitle,
+    .available-paths-panel .available-subtitle,
+    .available-paths-panel .panel-subtitle,
+    .available-paths-panel .subtitle,
+    .available-paths-panel .tiny,
+    .available-paths-panel .section-label {
+      margin-left: 124px !important;
+      padding-left: 0 !important;
+      text-align: left !important;
+      width: calc(100% - 124px) !important;
+      display: block !important;
+    }
+
+    @media (max-width: 640px) {
+      .available-paths-panel .section-subtitle,
+      .available-paths-panel .available-subtitle,
+      .available-paths-panel .panel-subtitle,
+      .available-paths-panel .subtitle,
+      .available-paths-panel .tiny,
+      .available-paths-panel .section-label {
+        margin-left: 102px !important;
+        width: calc(100% - 102px) !important;
+      }
+    }
+
 </style>
 </head>
 <body>
