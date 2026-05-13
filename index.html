@@ -2799,6 +2799,150 @@
       margin-top: 10px !important;
     }
 
+
+    /* Submission helper row layout */
+    .submission-helper-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 12px !important;
+      width: 100% !important;
+      margin-top: 8px !important;
+    }
+
+    .submission-helper-row .tiny {
+      margin: 0 !important;
+      text-align: left !important;
+      white-space: nowrap !important;
+      flex: 1 1 auto !important;
+    }
+
+    .submission-helper-row .char-counter {
+      margin: 0 !important;
+      text-align: right !important;
+      white-space: nowrap !important;
+      flex: 0 0 auto !important;
+    }
+
+
+    /* Unified non-category button behavior */
+    button:not(.cat-card):not(.category-card),
+    .nav-btn,
+    .primary,
+    .preview-action-btn,
+    .appearance-btn,
+    .filter-chip,
+    .commit-progression-btn,
+    #submitFoundationBtn,
+    #skipFoundationBtn,
+    #addPossibilityBtn,
+    #completeBtn,
+    #copyPreviewBtn,
+    #sharePreviewBtn,
+    #narratePreviewBtn {
+      min-height: 46px !important;
+      height: 46px !important;
+      padding: 0 18px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 7px !important;
+      background: transparent !important;
+      color: var(--text, #e7e9ea) !important;
+      border: 1px solid var(--line, #2f3336) !important;
+      box-shadow: none !important;
+      text-shadow: none !important;
+      font-weight: 1000 !important;
+      letter-spacing: 0.08em !important;
+      text-transform: uppercase !important;
+      line-height: 1 !important;
+      cursor: pointer !important;
+      transition:
+        transform 0.16s ease,
+        color 0.16s ease,
+        background 0.16s ease,
+        border-color 0.16s ease,
+        opacity 0.16s ease !important;
+    }
+
+    body.light-mode button:not(.cat-card):not(.category-card),
+    body.light-mode .nav-btn,
+    body.light-mode .primary,
+    body.light-mode .preview-action-btn,
+    body.light-mode .appearance-btn,
+    body.light-mode .filter-chip,
+    body.light-mode .commit-progression-btn {
+      background: #ffffff !important;
+      color: #0f1419 !important;
+      border-color: #cfd9de !important;
+    }
+
+    body:not(.light-mode) button:not(.cat-card):not(.category-card),
+    body:not(.light-mode) .nav-btn,
+    body:not(.light-mode) .primary,
+    body:not(.light-mode) .preview-action-btn,
+    body:not(.light-mode) .appearance-btn,
+    body:not(.light-mode) .filter-chip,
+    body:not(.light-mode) .commit-progression-btn {
+      background: #000000 !important;
+      color: #e7e9ea !important;
+      border-color: #2f3336 !important;
+    }
+
+    button:not(.cat-card):not(.category-card):hover,
+    .nav-btn:hover,
+    .primary:hover,
+    .preview-action-btn:hover,
+    .appearance-btn:hover,
+    .filter-chip:hover,
+    .commit-progression-btn:hover,
+    #submitFoundationBtn:hover,
+    #skipFoundationBtn:hover,
+    #addPossibilityBtn:hover,
+    #completeBtn:hover,
+    #copyPreviewBtn:hover,
+    #sharePreviewBtn:hover,
+    #narratePreviewBtn:hover {
+      color: var(--accent, #1d9bf0) !important;
+      border-color: var(--accent, #1d9bf0) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    button:not(.cat-card):not(.category-card):active,
+    .nav-btn:active,
+    .primary:active,
+    .preview-action-btn:active,
+    .appearance-btn:active,
+    .filter-chip:active,
+    .commit-progression-btn:active,
+    #submitFoundationBtn:active,
+    #skipFoundationBtn:active,
+    #addPossibilityBtn:active,
+    #completeBtn:active,
+    #copyPreviewBtn:active,
+    #sharePreviewBtn:active,
+    #narratePreviewBtn:active {
+      transform: translateY(1px) !important;
+    }
+
+    button:not(.cat-card):not(.category-card):disabled,
+    .primary:disabled,
+    .nav-btn:disabled,
+    .preview-action-btn:disabled,
+    .appearance-btn:disabled,
+    .filter-chip:disabled,
+    .commit-progression-btn:disabled,
+    #completeBtn.locked {
+      opacity: 0.52 !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+    }
+
+    .appearance-btn.active {
+      color: var(--accent, #1d9bf0) !important;
+      border-color: var(--accent, #1d9bf0) !important;
+    }
+
 </style>
 </head>
 <body>
@@ -2896,8 +3040,10 @@
             <div class="instruction" style="margin-top:10px;">OPTIONAL: Before exploring the trending paths, add one possible beginning for this category. Enter your 𝕏 handle for attribution.</div>
             <input class="handle-input" id="xHandleInput" maxlength="32" placeholder="@yourhandle" />
             <textarea id="foundationInput" maxlength="120" placeholder="Submit a new foundation for this category..."></textarea>
-            <div class="char-counter" id="foundationCharCounter">0 / 120</div>
-            <div class="tiny">Keep submissions short. Maximum 120 characters..</div>
+            <div class="submission-helper-row">
+              <div class="tiny">Keep submissions short.</div>
+              <div class="char-counter" id="foundationCharCounter">0 / 120</div>
+            </div>
             <div class="foundation-actions">
               <button class="primary" id="submitFoundationBtn">SUBMIT FOUNDATION</button>
               <button class="nav-btn" id="skipFoundationBtn" style="border-radius:18px;">VIEW TRENDING FOUNDATIONS</button>
@@ -2912,8 +3058,10 @@
             
             <input class="handle-input" id="frontierHandleInput" maxlength="32" placeholder="@yourhandle" />
             <textarea id="frontierInput" maxlength="120" placeholder="Submit a new possibility..."></textarea>
-            <div class="char-counter" id="frontierCharCounter">0 / 120</div>
-            <div class="tiny">Keep submissions short. Maximum 120 characters..</div>
+            <div class="submission-helper-row">
+              <div class="tiny">Keep submissions short.</div>
+              <div class="char-counter" id="frontierCharCounter">0 / 120</div>
+            </div>
             <div class="frontier-actions">
               <button class="primary" id="addPossibilityBtn">SUBMIT POSSIBILITY</button>
               <button class="primary danger complete-btn locked" id="completeBtn">CATEGORY COMPLETE</button>
