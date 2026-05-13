@@ -2943,6 +2943,43 @@
       border-color: var(--accent, #1d9bf0) !important;
     }
 
+
+    /* Hide appearance toggle outer shell */
+    .appearance-toggle {
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      padding: 0 !important;
+    }
+
+    body.light-mode .appearance-toggle,
+    body:not(.light-mode) .appearance-toggle {
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+    }
+
+    /* Hide floating external panel outer shell while keeping inner buttons */
+    .ideaordie-panel {
+      background: transparent !important;
+      background-image: none !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      padding: 0 !important;
+    }
+
+    .ideaordie-panel a,
+    .ideaordie-panel .ideaordie-home-link {
+      background: #000000 !important;
+      border: 1px solid rgba(255,255,255,0.18) !important;
+      box-shadow: none !important;
+    }
+
 </style>
 </head>
 <body>
@@ -3013,7 +3050,7 @@
               <div class="preview-actions">
                 <button class="preview-action-btn" id="narratePreviewBtn" type="button">LISTEN</button>
                 <button class="preview-action-btn" id="copyPreviewBtn" type="button">COPY</button>
-                <button class="preview-action-btn" id="sharePreviewBtn" type="button">SHARE ON 𝕏</button>
+                <button class="preview-action-btn" id="sharePreviewBtn" type="button">SHARE</button>
               </div>
             </div>
           </section>
