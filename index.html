@@ -3501,6 +3501,90 @@
       border-color: var(--accent, #1d9bf0) !important;
     }
 
+
+    /* TRENDING page layout */
+    .trending-page-panel {
+      margin-top: 14px;
+    }
+
+    .trending-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .trending-category-block {
+      display: grid;
+      gap: 10px;
+    }
+
+    .trending-category-title {
+      color: var(--accent, #1d9bf0);
+      font-size: 13px;
+      font-weight: 1000;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-left: 1px;
+    }
+
+    .trending-path-card {
+      border: 1px solid var(--line, #2f3336);
+      border-radius: 7px;
+      background: transparent;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    body.light-mode .trending-path-card {
+      border-color: #cfd9de;
+      background: #ffffff;
+    }
+
+    body:not(.light-mode) .trending-path-card {
+      border-color: #2f3336;
+      background: #000000;
+    }
+
+    .trending-foundation-text {
+      font-size: 15px;
+      line-height: 1.35;
+      font-weight: 850;
+      color: var(--text);
+    }
+
+    .trending-card-footer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .trending-status {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .trending-continue-btn {
+      width: 118px !important;
+      min-width: 118px !important;
+      max-width: 118px !important;
+      height: 35px !important;
+      min-height: 35px !important;
+      padding: 0 !important;
+    }
+
+    .trending-empty {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      padding: 8px 0;
+    }
+
 </style>
 </head>
 <body class="neutral-accent">
@@ -3653,12 +3737,15 @@
     </section>
 
     <section id="trendingView" class="hidden">
-      <div class="panel">
+      <div class="panel trending-page-panel">
         <div class="section-icon-title">
           <span class="section-icon">↗</span>
           <h2 class="panel-title" style="margin:0;">Trending</h2>
         </div>
-        <div class="instruction" style="margin-top:10px;">Highly active incomplete paths will appear here.</div>
+        <div class="instruction" style="margin-top:10px;">
+          Continue one of the strongest active paths and help push it forward.
+        </div>
+        <div class="trending-list" id="trendingList"></div>
       </div>
     </section>
 
@@ -5566,11 +5653,90 @@ ${siteUrl}`;
       renderAll();
     }
 
+    function getTrendingFoundationText(cat) {
+      if (Array.isArray(cat.progression) && cat.progression.length) {
+        const first = cat.progression[0];
+        return first.text || String(first);
+      }
+
+      if (Array.isArray(cat.options) && cat.options.length) {
+        return cat.options[0].text || String(cat.options[0]);
+      }
+
+      return cat.prompt || "No active path yet.";
+    }
+
+    function renderTrending() {
+      const list = document.getElementById("trendingList");
+      if (!list) return;
+
+      const order = state.categoryOrder || Object.keys(state.categories || {});
+      const categories = order
+        .map(name => state.categories[name])
+        .filter(Boolean);
+
+      list.innerHTML = "";
+
+      categories.forEach(cat => {
+        const block = document.createElement("div");
+        block.className = "trending-category-block";
+
+        const title = document.createElement("div");
+        title.className = "trending-category-title";
+        title.textContent = cat.name;
+        block.appendChild(title);
+
+        const hasActivePath = Array.isArray(cat.progression) && cat.progression.length > 0;
+
+        const cards = hasActivePath
+          ? [cat, cat, cat]
+          : [];
+
+        if (!cards.length) {
+          const empty = document.createElement("div");
+          empty.className = "trending-empty";
+          empty.textContent = "No active trending paths yet.";
+          block.appendChild(empty);
+        } else {
+          cards.slice(0, 3).forEach((pathCat, index) => {
+            const totalFinishVotes = (pathCat.submitVotes || 0) + (pathCat.completeVotes || 0);
+            const completePct = totalFinishVotes
+              ? Math.round(((pathCat.completeVotes || 0) / totalFinishVotes) * 100)
+              : 0;
+
+            const card = document.createElement("div");
+            card.className = "trending-path-card";
+            card.innerHTML = `
+              <div class="trending-foundation-text">${getTrendingFoundationText(pathCat)}</div>
+              <div class="trending-card-footer">
+                <div class="trending-status">${completePct}% COMPLETE · PATH ${index + 1}</div>
+                <button class="primary trending-continue-btn" type="button">CONTINUE</button>
+              </div>
+            `;
+
+            const button = card.querySelector(".trending-continue-btn");
+            if (button) {
+              button.addEventListener("click", () => {
+                state.activeCategory = pathCat.name;
+                showHome();
+                renderAll();
+              });
+            }
+
+            block.appendChild(card);
+          });
+        }
+
+        list.appendChild(block);
+      });
+    }
+
     function showTrending() {
       document.getElementById("homeView").classList.add("hidden");
       document.getElementById("trendingView").classList.remove("hidden");
       document.getElementById("aboutView").classList.add("hidden");
       document.getElementById("archiveView").classList.add("hidden");
+      renderTrending();
     }
 
     function showArchive() {
