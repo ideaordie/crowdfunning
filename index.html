@@ -3659,6 +3659,31 @@
       font-weight: 1000 !important;
     }
 
+
+    /* SVG monochrome TRENDING arrow */
+    .trending-icon {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      color: inherit !important;
+      background: transparent !important;
+    }
+
+    .trending-arrow-svg {
+      width: 18px !important;
+      height: 18px !important;
+      display: block !important;
+      overflow: visible !important;
+    }
+
+    body.light-mode .trending-icon {
+      color: #0f1419 !important;
+    }
+
+    body:not(.light-mode) .trending-icon {
+      color: #ffffff !important;
+    }
+
 </style>
 </head>
 <body class="neutral-accent">
@@ -3813,7 +3838,16 @@
     <section id="trendingView" class="hidden">
       <div class="panel trending-panel">
         <div class="section-icon-title">
-          <span class="section-icon trending-icon">⤴</span>
+          <span class="section-icon trending-icon">
+            <svg class="trending-arrow-svg" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 17L17 7M10 7H17V14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"/>
+            </svg>
+          </span>
           <h2 class="panel-title" style="margin:0;">Trending</h2>
         </div>
         <div class="instruction" style="margin-top:10px;">
