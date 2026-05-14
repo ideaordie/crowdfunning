@@ -3390,6 +3390,37 @@
       transform: translateY(-2px);
     }
 
+
+    /* Compact nav/footer control height */
+    .top-actions .nav-btn,
+    .appearance-toggle .appearance-btn,
+    #homeBtn,
+    #trendingBtn,
+    #archiveBtn,
+    #bottomResetBtn,
+    #themeToggleBtn,
+    #aboutBtn {
+      height: 35px !important;
+      min-height: 35px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+
+    /* Force all section symbol borders, including Path Preview, to use the active category theme color */
+    .section-icon,
+    .section-icon-title .section-icon,
+    body.light-mode .section-icon,
+    body:not(.light-mode) .section-icon {
+      border-color: var(--accent, #1d9bf0) !important;
+      color: var(--accent, #1d9bf0) !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    .section-icon-title .section-icon {
+      transition: border-color 0.16s ease, color 0.16s ease !important;
+    }
+
 </style>
 </head>
 <body>
@@ -5003,7 +5034,7 @@
           saveState();
           renderAll();
 
-          alert("Possibility submitted for review. If approved, it will appear as a live direction.");
+          alert("Possibility submitted for review. If approved, it will appear as a live path.");
           console.log("CROWD FUNNING: pending Frontier submitted:", {
             submissionId,
             content: result.text,
