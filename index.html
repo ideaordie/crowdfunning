@@ -3437,6 +3437,194 @@
       color: #0f1419 !important;
     }
 
+
+    /* Normalize COMPLETION PROGRESS flag symbol appearance */
+    .flag,
+    .progress-flag,
+    #completionPanel .flag,
+    #completionPanel .section-icon,
+    #completionProgress .flag,
+    #completionProgress .section-icon {
+      width: 34px !important;
+      height: 34px !important;
+      min-width: 34px !important;
+      min-height: 34px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 7px !important;
+      border: 1px solid var(--accent, #1d9bf0) !important;
+      background: transparent !important;
+      color: var(--accent, #1d9bf0) !important;
+      box-shadow: none !important;
+      line-height: 1 !important;
+    }
+
+    body.neutral-accent .flag,
+    body.neutral-accent .progress-flag,
+    body.neutral-accent #completionPanel .flag,
+    body.neutral-accent #completionProgress .flag {
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+      background: transparent !important;
+    }
+
+    body.light-mode.neutral-accent .flag,
+    body.light-mode.neutral-accent .progress-flag,
+    body.light-mode.neutral-accent #completionPanel .flag,
+    body.light-mode.neutral-accent #completionProgress .flag {
+      border-color: #0f1419 !important;
+      color: #0f1419 !important;
+      background: transparent !important;
+    }
+
+
+    /* DESTABILIZING is now a warning only, not a locked state */
+    .option-card.destabilizing {
+      opacity: 1 !important;
+      cursor: pointer !important;
+    }
+
+    .option-card.destabilizing:hover {
+      transform: translateY(-2px) !important;
+      border-color: var(--accent, #1d9bf0) !important;
+    }
+
+    .option-card.dead {
+      opacity: 1 !important;
+      cursor: pointer !important;
+      transform: translateY(0) !important;
+    }
+
+    .option-card.dead:hover {
+      transform: translateY(-2px) !important;
+      border-color: var(--accent, #1d9bf0) !important;
+    }
+
+
+    /* Simple TRENDING page layout only */
+    .trending-list {
+      display: grid;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .trending-category-block {
+      display: grid;
+      gap: 10px;
+    }
+
+    .trending-category-title {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 1000;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .trending-path-card {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: transparent;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .trending-foundation-text {
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.35;
+      font-weight: 850;
+    }
+
+    .trending-card-footer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .trending-status {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .trending-empty {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      padding: 8px 0;
+    }
+
+    .trending-icon {
+      font-family: Arial, Helvetica, sans-serif !important;
+      font-size: 18px !important;
+    }
+
+
+    /* Stabilize navigation + theme toggle button visibility */
+    .top-actions .primary,
+    .top-actions button,
+    .appearance-toggle button,
+    #homeBtn,
+    #trendingBtn,
+    #archiveBtn,
+    #bottomResetBtn,
+    #themeToggleBtn,
+    #aboutBtn {
+      opacity: 1 !important;
+      visibility: visible !important;
+      color: var(--text) !important;
+      border-color: var(--line) !important;
+      background: transparent !important;
+    }
+
+    .top-actions .primary:hover,
+    .top-actions button:hover,
+    .appearance-toggle button:hover,
+    #homeBtn:hover,
+    #trendingBtn:hover,
+    #archiveBtn:hover,
+    #bottomResetBtn:hover,
+    #themeToggleBtn:hover,
+    #aboutBtn:hover {
+      color: var(--text) !important;
+      border-color: var(--text) !important;
+      background: transparent !important;
+    }
+
+    body.light-mode .top-actions .primary,
+    body.light-mode .top-actions button,
+    body.light-mode .appearance-toggle button,
+    body.light-mode #homeBtn,
+    body.light-mode #trendingBtn,
+    body.light-mode #archiveBtn,
+    body.light-mode #bottomResetBtn,
+    body.light-mode #themeToggleBtn,
+    body.light-mode #aboutBtn {
+      color: #0f1419 !important;
+      border-color: #cfd9de !important;
+      background: #ffffff !important;
+    }
+
+    body:not(.light-mode) .top-actions .primary,
+    body:not(.light-mode) .top-actions button,
+    body:not(.light-mode) .appearance-toggle button,
+    body:not(.light-mode) #homeBtn,
+    body:not(.light-mode) #trendingBtn,
+    body:not(.light-mode) #archiveBtn,
+    body:not(.light-mode) #bottomResetBtn,
+    body:not(.light-mode) #themeToggleBtn,
+    body:not(.light-mode) #aboutBtn {
+      color: #ffffff !important;
+      border-color: #2f3336 !important;
+      background: #000000 !important;
+    }
+
 </style>
 </head>
 <body class="neutral-accent">
@@ -3589,12 +3777,15 @@
     </section>
 
     <section id="trendingView" class="hidden">
-      <div class="panel">
+      <div class="panel trending-panel">
         <div class="section-icon-title">
-          <span class="section-icon">↗</span>
+          <span class="section-icon trending-icon">⇧</span>
           <h2 class="panel-title" style="margin:0;">Trending</h2>
         </div>
-        <div class="instruction" style="margin-top:10px;">Highly active incomplete paths will appear here.</div>
+        <div class="instruction" style="margin-top:10px;">
+          Continue one of the strongest active paths and help push it forward.
+        </div>
+        <div class="trending-list" id="trendingList"></div>
       </div>
     </section>
 
@@ -4373,7 +4564,7 @@
           const canon = shownUp >= 35;
           const isPreselected = cat.preselectedOptionIndex === index;
           const card = document.createElement("div");
-          card.className = "option-card" + (collapsing ? " dead" : "") + (isPreselected ? " preselected" : "");
+          card.className = "option-card" + (collapsing ? " destabilizing" : "") + (isPreselected ? " preselected" : "");
           card.innerHTML = `
             <div class="option-copy">${opt.text}</div>
             ${attributionHtml(opt.originator)}
@@ -4393,15 +4584,13 @@
               </div>
             ` : ""}
           `;
-          if (!collapsing) {
-            card.addEventListener("click", () => chooseOption(index));
-            const commitBtn = card.querySelector(".commit-progression-btn");
-            if (commitBtn) {
-              commitBtn.addEventListener("click", event => {
-                event.stopPropagation();
-                commitPreselectedOption();
-              });
-            }
+          card.addEventListener("click", () => chooseOption(index));
+          const commitBtn = card.querySelector(".commit-progression-btn");
+          if (commitBtn) {
+            commitBtn.addEventListener("click", event => {
+              event.stopPropagation();
+              commitPreselectedOption();
+            });
           }
           options.appendChild(card);
         });
@@ -5504,11 +5693,86 @@ ${siteUrl}`;
       renderAll();
     }
 
+    function getTrendingFoundationText(cat) {
+      if (Array.isArray(cat.progression) && cat.progression.length) {
+        const first = cat.progression[0];
+        return first.text || String(first);
+      }
+
+      if (Array.isArray(cat.options) && cat.options.length) {
+        return cat.options[0].text || String(cat.options[0]);
+      }
+
+      return cat.prompt || "No active path yet.";
+    }
+
+    function renderTrending() {
+      const list = document.getElementById("trendingList");
+      if (!list) return;
+
+      const order = state.categoryOrder || Object.keys(state.categories || {});
+      const categories = order
+        .map(name => state.categories[name])
+        .filter(Boolean);
+
+      list.innerHTML = "";
+
+      categories.forEach(cat => {
+        const block = document.createElement("div");
+        block.className = "trending-category-block";
+
+        const title = document.createElement("div");
+        title.className = "trending-category-title";
+        title.textContent = cat.name;
+        block.appendChild(title);
+
+        const hasActivePath = Array.isArray(cat.progression) && cat.progression.length > 0;
+
+        if (!hasActivePath) {
+          const empty = document.createElement("div");
+          empty.className = "trending-empty";
+          empty.textContent = "No active trending paths yet.";
+          block.appendChild(empty);
+        } else {
+          for (let index = 0; index < 3; index += 1) {
+            const totalFinishVotes = (cat.submitVotes || 0) + (cat.completeVotes || 0);
+            const completePct = totalFinishVotes
+              ? Math.round(((cat.completeVotes || 0) / totalFinishVotes) * 100)
+              : 0;
+
+            const card = document.createElement("div");
+            card.className = "trending-path-card";
+            card.innerHTML = `
+              <div class="trending-foundation-text">${getTrendingFoundationText(cat)}</div>
+              <div class="trending-card-footer">
+                <div class="trending-status">${completePct}% COMPLETE · PATH ${index + 1}</div>
+                <button class="primary trending-continue-btn" type="button">CONTINUE</button>
+              </div>
+            `;
+
+            const button = card.querySelector(".trending-continue-btn");
+            if (button) {
+              button.addEventListener("click", () => {
+                state.activeCategory = cat.name;
+                showHome();
+                renderAll();
+              });
+            }
+
+            block.appendChild(card);
+          }
+        }
+
+        list.appendChild(block);
+      });
+    }
+
     function showTrending() {
       document.getElementById("homeView").classList.add("hidden");
       document.getElementById("trendingView").classList.remove("hidden");
       document.getElementById("aboutView").classList.add("hidden");
       document.getElementById("archiveView").classList.add("hidden");
+      renderTrending();
     }
 
     function showArchive() {
