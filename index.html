@@ -3144,6 +3144,221 @@
       width: auto !important;
     }
 
+
+    /* Unified button hover behavior */
+    button,
+    .btn,
+    .appearance-btn,
+    .mode-btn,
+    .option-btn,
+    .foundation-btn,
+    .frontier-btn,
+    .share-btn,
+    .copy-btn,
+    .listen-btn,
+    .notify-btn {
+      transition:
+        transform 0.16s ease,
+        background-color 0.16s ease,
+        border-color 0.16s ease,
+        color 0.16s ease,
+        box-shadow 0.16s ease !important;
+    }
+
+    button:hover,
+    .btn:hover,
+    .appearance-btn:hover,
+    .mode-btn:hover,
+    .option-btn:hover,
+    .foundation-btn:hover,
+    .frontier-btn:hover,
+    .share-btn:hover,
+    .copy-btn:hover,
+    .listen-btn:hover,
+    .notify-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent, #1d9bf0) !important;
+      color: var(--accent, #1d9bf0) !important;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.03),
+                  0 10px 20px rgba(0,0,0,0.18) !important;
+    }
+
+    body.light-mode button:hover,
+    body.light-mode .btn:hover,
+    body.light-mode .appearance-btn:hover,
+    body.light-mode .mode-btn:hover,
+    body.light-mode .option-btn:hover,
+    body.light-mode .foundation-btn:hover,
+    body.light-mode .frontier-btn:hover,
+    body.light-mode .share-btn:hover,
+    body.light-mode .copy-btn:hover,
+    body.light-mode .listen-btn:hover,
+    body.light-mode .notify-btn:hover {
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08) !important;
+    }
+
+    /* Keep category cards visually stable */
+    .category-card:hover,
+    .category-tile:hover,
+    .category-option:hover {
+      transform: none !important;
+    }
+
+
+    /* FINAL unified button behavior override */
+    button:not(.cat-card):not(.category-card),
+    .nav-btn,
+    .primary,
+    .preview-action-btn,
+    .appearance-btn,
+    .filter-chip,
+    .commit-progression-btn,
+    #submitFoundationBtn,
+    #skipFoundationBtn,
+    #addPossibilityBtn,
+    #completeBtn,
+    #copyPreviewBtn,
+    #sharePreviewBtn,
+    #narratePreviewBtn,
+    #bottomResetBtn,
+    #themeToggleBtn,
+    #aboutBtn {
+      height: 46px !important;
+      min-height: 46px !important;
+      padding: 0 18px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 7px !important;
+      background: transparent !important;
+      color: var(--text, #e7e9ea) !important;
+      border: 1px solid var(--line, #2f3336) !important;
+      box-shadow: none !important;
+      text-shadow: none !important;
+      font-weight: 1000 !important;
+      letter-spacing: 0.08em !important;
+      text-transform: uppercase !important;
+      line-height: 1 !important;
+      cursor: pointer !important;
+      transform: translateY(0) !important;
+      transition:
+        transform 0.16s ease,
+        color 0.16s ease,
+        border-color 0.16s ease,
+        background-color 0.16s ease !important;
+    }
+
+    body.light-mode button:not(.cat-card):not(.category-card),
+    body.light-mode .nav-btn,
+    body.light-mode .primary,
+    body.light-mode .preview-action-btn,
+    body.light-mode .appearance-btn,
+    body.light-mode .filter-chip,
+    body.light-mode .commit-progression-btn {
+      background: #ffffff !important;
+      color: #0f1419 !important;
+      border-color: #cfd9de !important;
+    }
+
+    body:not(.light-mode) button:not(.cat-card):not(.category-card),
+    body:not(.light-mode) .nav-btn,
+    body:not(.light-mode) .primary,
+    body:not(.light-mode) .preview-action-btn,
+    body:not(.light-mode) .appearance-btn,
+    body:not(.light-mode) .filter-chip,
+    body:not(.light-mode) .commit-progression-btn {
+      background: #000000 !important;
+      color: #e7e9ea !important;
+      border-color: #2f3336 !important;
+    }
+
+    button:not(.cat-card):not(.category-card):hover,
+    .nav-btn:hover,
+    .primary:hover,
+    .preview-action-btn:hover,
+    .appearance-btn:hover,
+    .filter-chip:hover,
+    .commit-progression-btn:hover,
+    #submitFoundationBtn:hover,
+    #skipFoundationBtn:hover,
+    #addPossibilityBtn:hover,
+    #completeBtn:hover,
+    #copyPreviewBtn:hover,
+    #sharePreviewBtn:hover,
+    #narratePreviewBtn:hover,
+    #bottomResetBtn:hover,
+    #themeToggleBtn:hover,
+    #aboutBtn:hover {
+      color: var(--accent, #1d9bf0) !important;
+      border-color: var(--accent, #1d9bf0) !important;
+      background: transparent !important;
+      transform: translateY(-2px) !important;
+      box-shadow: none !important;
+    }
+
+    body.light-mode button:not(.cat-card):not(.category-card):hover,
+    body.light-mode .nav-btn:hover,
+    body.light-mode .primary:hover,
+    body.light-mode .preview-action-btn:hover,
+    body.light-mode .appearance-btn:hover,
+    body.light-mode .filter-chip:hover,
+    body.light-mode .commit-progression-btn:hover {
+      background: #ffffff !important;
+      color: var(--accent, #1d9bf0) !important;
+      border-color: var(--accent, #1d9bf0) !important;
+    }
+
+    body:not(.light-mode) button:not(.cat-card):not(.category-card):hover,
+    body:not(.light-mode) .nav-btn:hover,
+    body:not(.light-mode) .primary:hover,
+    body:not(.light-mode) .preview-action-btn:hover,
+    body:not(.light-mode) .appearance-btn:hover,
+    body:not(.light-mode) .filter-chip:hover,
+    body:not(.light-mode) .commit-progression-btn:hover {
+      background: #000000 !important;
+      color: var(--accent, #1d9bf0) !important;
+      border-color: var(--accent, #1d9bf0) !important;
+    }
+
+    button:not(.cat-card):not(.category-card):active,
+    .nav-btn:active,
+    .primary:active,
+    .preview-action-btn:active,
+    .appearance-btn:active,
+    .filter-chip:active,
+    .commit-progression-btn:active {
+      transform: translateY(1px) !important;
+    }
+
+    button:disabled,
+    .primary:disabled,
+    .nav-btn:disabled,
+    .preview-action-btn:disabled,
+    .appearance-btn:disabled,
+    .filter-chip:disabled,
+    .commit-progression-btn:disabled,
+    #completeBtn.locked {
+      opacity: 0.52 !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+      color: var(--muted) !important;
+      border-color: var(--line, #2f3336) !important;
+    }
+
+    /* AVAILABLE PATHS empty-state collapse */
+    #directionsPanel:not(.foundation-only) #optionModeLabel:empty,
+    #directionsPanel:not(.foundation-only) #options:empty {
+      display: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 0 !important;
+      min-height: 0 !important;
+    }
+
+    #directionsPanel.empty-available-paths {
+      padding-bottom: 16px !important;
+    }
+
 </style>
 </head>
 <body>
@@ -3988,6 +4203,7 @@
         dirIcon.textContent = "⌁";
       }
       if (dirTitleText) dirTitleText.textContent = "Available Paths";
+      directionsPanel.classList.remove("empty-available-paths");
       optionModeLabel.style.display = "";
       options.style.display = "";
       frontier.classList.remove("show");
@@ -3999,7 +4215,9 @@
         badge.textContent = "SELECT A CATEGORY";
         storyText.textContent = "Choose what the crowd should develop first.";
         instruction.textContent = "The first action after category selection is to submit a possible foundation.";
+        directionsPanel.classList.add("empty-available-paths");
         optionModeLabel.style.display = "none";
+        optionModeLabel.textContent = "";
         options.style.display = "none";
         options.innerHTML = "";
         if (thresholdNote) thresholdNote.textContent = "";
