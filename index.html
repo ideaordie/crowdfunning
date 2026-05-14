@@ -3133,6 +3133,17 @@
       display: block !important;
     }
 
+
+    /* Restore visible AVAILABLE PATHS mode label */
+    #directionsPanel:not(.foundation-only) > #optionModeLabel.option-mode-label {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      margin-left: 44px !important;
+      text-align: left !important;
+      width: auto !important;
+    }
+
 </style>
 </head>
 <body>
@@ -4037,7 +4048,7 @@
       if (cat.completeVoteSubmitted && !cat.completed) {
         options.innerHTML = `<div class="empty">${name} COMPLETE vote recorded. This completion attempt is closed for this session.</div>`;
       } else if (!cat.frontierOpen) {
-        optionModeLabel.textContent = cat.phase === "foundation_select" ? "Trending foundations" : "Next available directions";
+        optionModeLabel.textContent = cat.phase === "foundation_select" ? "TRENDING FOUNDATIONS" : "NEXT AVAILABLE DIRECTIONS";
         cat.options.forEach((opt, index) => {
           const score = typeof opt.score === "number" ? opt.score : opt.up - opt.down;
           const shownUp = typeof opt.selectionCount === "number" ? opt.selectionCount : opt.up;
