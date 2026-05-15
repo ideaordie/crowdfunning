@@ -3740,227 +3740,6 @@
       max-width: none !important;
     }
 
-
-    /* Consistent card selection behavior across all option cards */
-    .option-card,
-    .submit-new-path-card {
-      border-radius: 7px !important;
-      box-shadow: none !important;
-    }
-
-    .option-card.preselected,
-    .submit-new-path-card.preselected {
-      border-color: var(--accent, #1d9bf0) !important;
-      box-shadow: none !important;
-      transform: translateY(-2px) !important;
-      opacity: 1 !important;
-    }
-
-    .option-card.preselected .primary,
-    .option-card.preselected .commit-progression-btn,
-    .option-card.preselected .card-complete-btn {
-      color: var(--accent, #1d9bf0) !important;
-      border-color: var(--accent, #1d9bf0) !important;
-      background: transparent !important;
-    }
-
-    .option-card.preselected .selected-pill,
-    .submit-new-path-card.preselected .selected-pill {
-      color: var(--accent, #1d9bf0) !important;
-      border-color: var(--accent, #1d9bf0) !important;
-      background: transparent !important;
-    }
-
-    .submit-new-path-card.preselected .option-copy {
-      color: var(--accent, #1d9bf0) !important;
-    }
-
-    .option-card:active,
-    .submit-new-path-card:active {
-      transform: translateY(0) !important;
-    }
-
-    @media (hover: none) {
-      .option-card:hover,
-      .submit-new-path-card:hover {
-        box-shadow: none !important;
-      }
-    }
-
-
-    /* v1.7.29 CLEAN INTERACTION RESET
-       Keep functionality. Normalize visuals. Remove layered effects. */
-
-    .option-card,
-    .submit-new-path-card,
-    .trending-path-card,
-    .cat-card,
-    .category-card {
-      background: transparent !important;
-      background-image: none !important;
-      box-shadow: none !important;
-      filter: none !important;
-      text-shadow: none !important;
-      transform: none !important;
-      border-radius: 7px !important;
-      border: 1px solid var(--line, #2f3336) !important;
-      opacity: 1 !important;
-      transition: border-color 0.16s ease, color 0.16s ease, background-color 0.16s ease !important;
-    }
-
-    body.light-mode .option-card,
-    body.light-mode .submit-new-path-card,
-    body.light-mode .trending-path-card,
-    body.light-mode .cat-card,
-    body.light-mode .category-card {
-      background: #ffffff !important;
-      border-color: #cfd9de !important;
-    }
-
-    body:not(.light-mode) .option-card,
-    body:not(.light-mode) .submit-new-path-card,
-    body:not(.light-mode) .trending-path-card,
-    body:not(.light-mode) .cat-card,
-    body:not(.light-mode) .category-card {
-      background: #000000 !important;
-      border-color: #2f3336 !important;
-    }
-
-    .option-card:hover,
-    .submit-new-path-card:hover,
-    .trending-path-card:hover,
-    .cat-card:hover,
-    .category-card:hover,
-    .option-card.preselected,
-    .submit-new-path-card.preselected {
-      border-color: var(--accent, #1d9bf0) !important;
-      box-shadow: none !important;
-      transform: none !important;
-      opacity: 1 !important;
-    }
-
-    .option-card.preselected .option-copy,
-    .submit-new-path-card.preselected .option-copy,
-    .option-card:hover .option-copy,
-    .submit-new-path-card:hover .option-copy {
-      color: var(--accent, #1d9bf0) !important;
-    }
-
-    .option-card.dead,
-    .option-card.destabilizing {
-      opacity: 1 !important;
-      cursor: pointer !important;
-      transform: none !important;
-      filter: none !important;
-    }
-
-    .primary,
-    button.primary,
-    .nav-btn,
-    .appearance-btn,
-    .preview-action-btn,
-    .commit-progression-btn,
-    .card-complete-btn,
-    .trending-continue-btn,
-    #submitFoundationBtn,
-    #skipFoundationBtn,
-    #addPossibilityBtn,
-    #bottomResetBtn,
-    #themeToggleBtn,
-    #aboutBtn,
-    #homeBtn,
-    #trendingBtn,
-    #archiveBtn {
-      background: transparent !important;
-      background-image: none !important;
-      box-shadow: none !important;
-      text-shadow: none !important;
-      filter: none !important;
-      transform: none !important;
-      border-radius: 7px !important;
-      border: 1px solid var(--line, #2f3336) !important;
-      color: var(--text, #e7e9ea) !important;
-      opacity: 1 !important;
-      transition: border-color 0.16s ease, color 0.16s ease, background-color 0.16s ease !important;
-    }
-
-    body.light-mode .primary,
-    body.light-mode button.primary,
-    body.light-mode .nav-btn,
-    body.light-mode .appearance-btn,
-    body.light-mode .preview-action-btn,
-    body.light-mode .commit-progression-btn,
-    body.light-mode .card-complete-btn,
-    body.light-mode .trending-continue-btn {
-      background: #ffffff !important;
-      border-color: #cfd9de !important;
-      color: #0f1419 !important;
-    }
-
-    body:not(.light-mode) .primary,
-    body:not(.light-mode) button.primary,
-    body:not(.light-mode) .nav-btn,
-    body:not(.light-mode) .appearance-btn,
-    body:not(.light-mode) .preview-action-btn,
-    body:not(.light-mode) .commit-progression-btn,
-    body:not(.light-mode) .card-complete-btn,
-    body:not(.light-mode) .trending-continue-btn {
-      background: #000000 !important;
-      border-color: #2f3336 !important;
-      color: #ffffff !important;
-    }
-
-    .primary:hover,
-    button.primary:hover,
-    .nav-btn:hover,
-    .appearance-btn:hover,
-    .preview-action-btn:hover,
-    .commit-progression-btn:hover,
-    .card-complete-btn:hover,
-    .trending-continue-btn:hover,
-    .option-card.preselected .primary,
-    .option-card.preselected .commit-progression-btn,
-    .option-card.preselected .card-complete-btn {
-      color: var(--accent, #1d9bf0) !important;
-      border-color: var(--accent, #1d9bf0) !important;
-      background: transparent !important;
-      box-shadow: none !important;
-      transform: none !important;
-    }
-
-    .selected-pill,
-    .new-pill,
-    .collapse-pill,
-    .canon-pill {
-      background: transparent !important;
-      box-shadow: none !important;
-      text-shadow: none !important;
-    }
-
-    .selected-pill {
-      color: var(--accent, #1d9bf0) !important;
-      border-color: var(--accent, #1d9bf0) !important;
-    }
-
-    .commit-card-action,
-    .card-action-row {
-      box-shadow: none !important;
-      background: transparent !important;
-    }
-
-    @media (hover: none) {
-      .option-card:hover,
-      .submit-new-path-card:hover,
-      .primary:hover,
-      button.primary:hover,
-      .nav-btn:hover,
-      .appearance-btn:hover,
-      .preview-action-btn:hover {
-        transform: none !important;
-        box-shadow: none !important;
-      }
-    }
-
 </style>
 </head>
 <body class="neutral-accent">
@@ -4955,11 +4734,10 @@
 
         if (cat.phase !== "foundation_select") {
           const submitCard = document.createElement("div");
-          submitCard.className = "option-card submit-new-path-card" + (cat.frontierSubmitOpen ? " preselected" : "");
+          submitCard.className = "option-card submit-new-path-card";
           submitCard.innerHTML = `
             <div class="option-copy">SUBMIT A NEW PATH</div>
             <div class="submit-new-path-note">Don’t like these options? Add another possibility for this point in the path.</div>
-            ${cat.frontierSubmitOpen ? `<span class="selected-pill">SELECTED</span>` : ""}
           `;
           submitCard.addEventListener("click", () => openFrontierSubmission());
           options.appendChild(submitCard);
@@ -6538,13 +6316,12 @@ ${siteUrl}`;
 </style>
 
 
-<style id="v1-7-30-final-card-interaction-reset">
-  /* v1.7.30 FINAL CARD INTERACTION RESET
-     This sits at the end of the document so it wins over prior accumulated CSS. */
+<style id="v1-7-28c-card-neutral-isolation">
+  /* Neutralize option-card default styling from category accent theme.
+     Accent appears only on hover or selected/preselected states. */
 
   body .options .option-card,
-  body .options .submit-new-path-card,
-  body .trending-path-card {
+  body .options .submit-new-path-card {
     background: transparent !important;
     background-image: none !important;
     box-shadow: none !important;
@@ -6553,79 +6330,87 @@ ${siteUrl}`;
     transform: none !important;
     opacity: 1 !important;
     border-radius: 7px !important;
-    border: 1px solid var(--line, #2f3336) !important;
-    transition: border-color 0.12s ease, color 0.12s ease !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+    border-color: var(--line, #2f3336) !important;
+    color: var(--text, #e7e9ea) !important;
   }
 
   body.light-mode .options .option-card,
-  body.light-mode .options .submit-new-path-card,
-  body.light-mode .trending-path-card {
+  body.light-mode .options .submit-new-path-card {
     background: #ffffff !important;
     border-color: #cfd9de !important;
+    color: #0f1419 !important;
   }
 
   body:not(.light-mode) .options .option-card,
-  body:not(.light-mode) .options .submit-new-path-card,
-  body:not(.light-mode) .trending-path-card {
+  body:not(.light-mode) .options .submit-new-path-card {
     background: #000000 !important;
     border-color: #2f3336 !important;
+    color: #e7e9ea !important;
+  }
+
+  body .options .option-card .option-copy,
+  body .options .submit-new-path-card .option-copy,
+  body .options .option-card .submit-new-path-note,
+  body .options .submit-new-path-card .submit-new-path-note,
+  body .options .option-card .vote-row,
+  body .options .submit-new-path-card .vote-row {
+    color: inherit !important;
+    text-shadow: none !important;
   }
 
   body .options .option-card:hover,
   body .options .submit-new-path-card:hover,
-  body .trending-path-card:hover,
   body .options .option-card.preselected,
   body .options .submit-new-path-card.preselected {
-    background-image: none !important;
-    box-shadow: none !important;
-    filter: none !important;
-    transform: none !important;
-    opacity: 1 !important;
     border-color: var(--accent, #1d9bf0) !important;
-  }
-
-  body .options .option-card.preselected .option-copy,
-  body .options .submit-new-path-card.preselected .option-copy,
-  body .options .option-card:hover .option-copy,
-  body .options .submit-new-path-card:hover .option-copy {
-    color: var(--accent, #1d9bf0) !important;
-    text-shadow: none !important;
-  }
-
-  body .options .option-card.dead,
-  body .options .option-card.destabilizing,
-  body .options .option-card.dead:hover,
-  body .options .option-card.destabilizing:hover {
-    opacity: 1 !important;
-    cursor: pointer !important;
-    transform: none !important;
-    filter: none !important;
+    color: var(--text, #e7e9ea) !important;
     box-shadow: none !important;
+    transform: none !important;
+  }
+
+  body.light-mode .options .option-card:hover,
+  body.light-mode .options .submit-new-path-card:hover,
+  body.light-mode .options .option-card.preselected,
+  body.light-mode .options .submit-new-path-card.preselected {
+    color: #0f1419 !important;
+  }
+
+  body:not(.light-mode) .options .option-card:hover,
+  body:not(.light-mode) .options .submit-new-path-card:hover,
+  body:not(.light-mode) .options .option-card.preselected,
+  body:not(.light-mode) .options .submit-new-path-card.preselected {
+    color: #e7e9ea !important;
+  }
+
+  body .options .option-card:hover .option-copy,
+  body .options .submit-new-path-card:hover .option-copy,
+  body .options .option-card.preselected .option-copy,
+  body .options .submit-new-path-card.preselected .option-copy {
+    color: var(--accent, #1d9bf0) !important;
   }
 
   body .options .option-card .primary,
   body .options .option-card button,
   body .options .submit-new-path-card .primary,
-  body .options .submit-new-path-card button,
-  body .trending-path-card .primary,
-  body .trending-path-card button {
+  body .options .submit-new-path-card button {
     background: transparent !important;
     background-image: none !important;
     box-shadow: none !important;
-    text-shadow: none !important;
     filter: none !important;
+    text-shadow: none !important;
     transform: none !important;
     opacity: 1 !important;
     border-radius: 7px !important;
     border: 1px solid var(--line, #2f3336) !important;
     color: var(--text, #e7e9ea) !important;
-    transition: border-color 0.12s ease, color 0.12s ease !important;
   }
 
   body.light-mode .options .option-card .primary,
   body.light-mode .options .option-card button,
-  body.light-mode .trending-path-card .primary,
-  body.light-mode .trending-path-card button {
+  body.light-mode .options .submit-new-path-card .primary,
+  body.light-mode .options .submit-new-path-card button {
     background: #ffffff !important;
     border-color: #cfd9de !important;
     color: #0f1419 !important;
@@ -6633,43 +6418,41 @@ ${siteUrl}`;
 
   body:not(.light-mode) .options .option-card .primary,
   body:not(.light-mode) .options .option-card button,
-  body:not(.light-mode) .trending-path-card .primary,
-  body:not(.light-mode) .trending-path-card button {
+  body:not(.light-mode) .options .submit-new-path-card .primary,
+  body:not(.light-mode) .options .submit-new-path-card button {
     background: #000000 !important;
     border-color: #2f3336 !important;
-    color: #ffffff !important;
+    color: #e7e9ea !important;
   }
 
   body .options .option-card .primary:hover,
   body .options .option-card button:hover,
-  body .trending-path-card .primary:hover,
-  body .trending-path-card button:hover,
+  body .options .submit-new-path-card .primary:hover,
+  body .options .submit-new-path-card button:hover,
   body .options .option-card.preselected .primary,
-  body .options .option-card.preselected button {
-    color: var(--accent, #1d9bf0) !important;
+  body .options .option-card.preselected button,
+  body .options .submit-new-path-card.preselected .primary,
+  body .options .submit-new-path-card.preselected button {
     border-color: var(--accent, #1d9bf0) !important;
-    background-image: none !important;
+    color: var(--accent, #1d9bf0) !important;
+    background: transparent !important;
     box-shadow: none !important;
     transform: none !important;
   }
 
-  body .options .option-card .selected-pill,
-  body .options .option-card .new-pill,
-  body .options .option-card .collapse-pill,
-  body .options .option-card .canon-pill {
+  body .options .option-card.dead,
+  body .options .option-card.destabilizing {
+    opacity: 1 !important;
+    cursor: pointer !important;
+    filter: none !important;
+    transform: none !important;
+  }
+
+  body .options .selected-pill {
     background: transparent !important;
-    background-image: none !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-
-  body .options .option-card .selected-pill {
-    color: var(--accent, #1d9bf0) !important;
     border-color: var(--accent, #1d9bf0) !important;
-  }
-
-  body .options .option-card * {
-    text-shadow: none !important;
+    color: var(--accent, #1d9bf0) !important;
+    box-shadow: none !important;
   }
 </style>
 
