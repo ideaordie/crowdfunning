@@ -3692,6 +3692,27 @@
       font-weight: 850 !important;
     }
 
+
+    /* Selected card dual action layout */
+    .card-action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .card-action-row .primary {
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: none !important;
+    }
+
+    @media (max-width: 520px) {
+      .card-action-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
 </style>
 </head>
 <body class="neutral-accent">
@@ -4656,8 +4677,11 @@
             ${canon ? `<span class="canon-pill">CANON PRESSURE</span>` : ""}
             ${isPreselected ? `
               <div class="commit-card-action">
-                <button class="primary commit-progression-btn" type="button">COMMIT TO PROGRESSION</button>
-                <div class="commit-note">This advances the live branch. You can still select a different card before committing.</div>
+                <div class="card-action-row">
+                  <button class="primary commit-progression-btn" type="button">COMMIT TO PROGRESSION</button>
+                  <button class="primary card-complete-btn" type="button">${state.activeCategory || "CATEGORY"} COMPLETE</button>
+                </div>
+                <div class="commit-note">Commit to keep building from this card, or complete if this path feels finished.</div>
               </div>
             ` : ""}
           `;
@@ -4669,6 +4693,15 @@
               commitPreselectedOption();
             });
           }
+
+          const cardCompleteBtn = card.querySelector(".card-complete-btn");
+          if (cardCompleteBtn) {
+            cardCompleteBtn.addEventListener("click", event => {
+              event.stopPropagation();
+              completeSelectedCard();
+            });
+          }
+
           options.appendChild(card);
         });
 
@@ -4700,15 +4733,16 @@
 
       const totalFinishVotes = cat.submitVotes + cat.completeVotes;
       const completePct = totalFinishVotes ? Math.round((cat.completeVotes / totalFinishVotes) * 100) : 0;
-      const thresholdMet = !!cat.frontierOpen;
+      const hasCommittedPath = Array.isArray(cat.progression) && cat.progression.length > 0;
+      const completionVoteUnlocked = hasCommittedPath;
 
       completeBtn.textContent = `${name} COMPLETE`;
-      completeBtn.classList.toggle("locked", !thresholdMet);
-      completeBtn.disabled = !thresholdMet;
+      completeBtn.classList.toggle("locked", !completionVoteUnlocked);
+      completeBtn.disabled = !completionVoteUnlocked;
 
-      if (thresholdNote) thresholdNote.textContent = thresholdMet
-        ? `${name} completion vote: ${completePct}% COMPLETE vs ${100 - completePct}% NEW DIRECTION. Completion requires ${COMPLETION_THRESHOLD_PERCENT}% COMPLETE.`
-        : `${name} COMPLETE unlocks when the preset available directions run out.`;
+      if (thresholdNote) thresholdNote.textContent = completionVoteUnlocked
+        ? `${name} completion vote: ${completePct}% COMPLETE vs ${100 - completePct}% NEW PATH. Completion requires ${COMPLETION_THRESHOLD_PERCENT}% COMPLETE and at least ${MIN_COMPLETE_VOTES_TO_COMPLETE} COMPLETE votes.`
+        : `${name} COMPLETE unlocks after an approved path begins.`;
 
       renderProgression();
       renderCategoryProgress();
@@ -4716,7 +4750,7 @@
 
     function openFrontierSubmission() {
       const cat = state.categories[state.activeCategory];
-      if (!cat || cat.completed) return;
+      if (!cat || cat.completed) return false;
 
       cat.frontierSubmitOpen = true;
       saveState();
@@ -4913,7 +4947,21 @@
       return true;
     }
 
-    async function commitPreselectedOption() {
+    async function completeSelectedCard() {
+      const cat = state.categories[state.activeCategory];
+
+      if (!cat || state.activeCategory !== "JOKE" || !cat.liveEntry) return;
+
+      if (!cat.preselectedDirectionId) {
+        alert("Please select a path before voting to complete.");
+        return;
+      }
+
+      await commitPreselectedOption({ completeAfterCommit: true });
+    }
+
+    async function commitPreselectedOption(options = {}) {
+      const completeAfterCommit = !!options.completeAfterCommit;
       const cat = state.categories[state.activeCategory];
 
       if (!cat || state.activeCategory !== "JOKE" || !cat.liveEntry) return;
@@ -4992,6 +5040,10 @@
 
         saveState();
         renderAll();
+
+        if (completeAfterCommit) {
+          await completeCategory();
+        }
       } catch (err) {
         console.error("CROWD FUNNING: unexpected commit error:", err);
         alert("Commit failed unexpectedly. Check the console for details.");
@@ -5206,7 +5258,8 @@
       return { ok: true, text: cleaned };
     }
 
-    async function addPossibility() {
+    async function addPossibility(options = {}) {
+      const silent = !!options.silent;
       const input = document.getElementById("frontierInput");
       const handleInput = document.getElementById("frontierHandleInput");
       const cat = state.categories[state.activeCategory];
@@ -5218,7 +5271,7 @@
       const result = moderateInput(input.value);
       if (!result.ok) {
         alert(result.reason);
-        return;
+        return false;
       }
 
       if (state.activeCategory === "JOKE") {
@@ -5244,7 +5297,7 @@
           if (!userId) {
             console.error("CROWD FUNNING: cannot create pending frontier submission without a user id.");
             alert("Frontier submission failed. Please reload and try again.");
-            return;
+            return false;
           }
 
           const lastProgressionItem =
@@ -5284,7 +5337,7 @@
               cat
             });
             alert("Frontier submission failed. Current branch context was not found.");
-            return;
+            return false;
           }
 
           const { data: nodeId, error: nodeError } = await crowdFunningSupabase.rpc("ensure_node_for_committed_direction", {
@@ -5298,7 +5351,7 @@
           if (nodeError || !nodeId) {
             console.error("CROWD FUNNING: could not ensure Frontier node.", nodeError);
             alert("Frontier submission failed. Could not create the current branch node.");
-            return;
+            return false;
           }
 
           console.log("CROWD FUNNING: Frontier parent node ready:", nodeId);
@@ -5316,7 +5369,7 @@
           if (submitError) {
             console.error("CROWD FUNNING: pending Frontier submission failed:", submitError);
             alert("Frontier submission failed. Check the console for details.");
-            return;
+            return false;
           }
 
           if (notificationRequest.wantsNotification) {
@@ -5339,20 +5392,20 @@
           resetNotificationRequest("frontier");
           updateCharCounters();
           saveState();
-          renderAll();
+          if (!silent) renderAll();
 
-          alert("Possibility submitted for review. If approved, it will appear as a live path.");
+          if (!silent) alert("Possibility submitted for review. If approved, it will appear as a live path.");
           console.log("CROWD FUNNING: pending Frontier submitted:", {
             submissionId,
             content: result.text,
             parentNodeId: nodeId,
             attribution: submittedHandle
           });
-          return;
+          return true;
         } catch (err) {
           console.error("CROWD FUNNING: unexpected pending Frontier submission error:", err);
           alert("Frontier submission failed unexpectedly. Check the console for details.");
-          return;
+          return false;
         }
       }
 
@@ -5381,12 +5434,25 @@
       handleInput.value = "";
       updateCharCounters();
       saveState();
-      renderAll();
+      if (!silent) renderAll();
+      return true;
     }
 
     async function completeCategory() {
       const cat = state.categories[state.activeCategory];
       if (!cat || cat.completed || cat.completeVoteSubmitted) return;
+
+      const hasCommittedPath = Array.isArray(cat.progression) && cat.progression.length > 0;
+      if (!hasCommittedPath) {
+        alert("Complete voting unlocks after an approved path begins.");
+        return;
+      }
+
+      const frontierInput = document.getElementById("frontierInput");
+      if (frontierInput && frontierInput.value.trim()) {
+        const submittedOk = await addPossibility({ silent: true });
+        if (!submittedOk) return;
+      }
 
       if (state.activeCategory === "JOKE") {
         const voteOk = await voteCurrentProgressionPath(cat, "complete");
@@ -5400,10 +5466,11 @@
 
         const totalFinishVotes = (cat.submitVotes || 0) + (cat.completeVotes || 0);
         const completePct = totalFinishVotes ? Math.round(((cat.completeVotes || 0) / totalFinishVotes) * 100) : 0;
-        const thresholdMet = cat.progression.length >= (cat.progressionThreshold || 4);
+        const thresholdMet = completePct >= COMPLETION_THRESHOLD_PERCENT;
         const collaborationMet = (cat.submissionCount || 0) >= 3;
+        const minimumCompleteVotesMet = (cat.completeVotes || 0) >= MIN_COMPLETE_VOTES_TO_COMPLETE;
 
-        if (!thresholdMet || !collaborationMet || completePct < COMPLETION_THRESHOLD_PERCENT) {
+        if (!thresholdMet || !collaborationMet || !minimumCompleteVotesMet) {
           cat.frontierOpen = false;
           cat.options = [];
           saveState();
@@ -5438,10 +5505,11 @@
 
       const totalFinishVotes = (cat.submitVotes || 0) + cat.completeVotes;
       const completePct = totalFinishVotes ? Math.round((cat.completeVotes / totalFinishVotes) * 100) : 0;
-      const thresholdMet = cat.progression.length >= (cat.progressionThreshold || 4);
+      const thresholdMet = completePct >= COMPLETION_THRESHOLD_PERCENT;
       const collaborationMet = (cat.submissionCount || 0) >= 3;
+      const minimumCompleteVotesMet = (cat.completeVotes || 0) >= MIN_COMPLETE_VOTES_TO_COMPLETE;
 
-      if (!thresholdMet || !collaborationMet || completePct < COMPLETION_THRESHOLD_PERCENT) {
+      if (!thresholdMet || !collaborationMet || !minimumCompleteVotesMet) {
         cat.frontierOpen = false;
         cat.options = [];
         saveState();
