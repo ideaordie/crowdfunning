@@ -4671,8 +4671,6 @@
         ? `Pick the strongest foundation. Your choice starts the progression and pressures the other foundations toward shedding.`
         : `Pick the strongest direction. Your choice upvotes it and pressures the others toward collapse.`;
 
-      options.classList.toggle("submit-new-selected", !!cat.frontierSubmitOpen);
-
       if (cat.completeVoteSubmitted && !cat.completed) {
         options.innerHTML = `<div class="empty">${name} COMPLETE vote recorded. This completion attempt is closed for this session.</div>`;
       } else if (!cat.frontierOpen) {
@@ -4782,6 +4780,10 @@
       const cat = state.categories[state.activeCategory];
       if (!cat || cat.completed) return false;
 
+      cat.preselectedOptionIndex = null;
+      cat.preselectedDirectionId = null;
+      cat.preselectedDirectionText = "";
+      cat.preselectedOptionKey = null;
       cat.frontierSubmitOpen = true;
       saveState();
       renderAll();
@@ -6456,19 +6458,6 @@ ${siteUrl}`;
     border-color: var(--accent, #1d9bf0) !important;
     color: var(--accent, #1d9bf0) !important;
     box-shadow: none !important;
-  }
-</style>
-
-
-<style id="v1-7-29-submit-new-collapse-patch">
-  /* Collapse path option cards only when SUBMIT A NEW PATH is selected */
-  body .options.submit-new-selected > .option-card:not(.submit-new-path-card) {
-    display: none !important;
-  }
-
-  body .options.submit-new-selected > .submit-new-path-card {
-    display: flex !important;
-    border-color: var(--accent, #1d9bf0) !important;
   }
 </style>
 
