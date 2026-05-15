@@ -3741,12 +3741,19 @@
     }
 
 
-    /* Consistent mobile/desktop card selection behavior */
+    /* Consistent card selection behavior across all option cards */
+    .option-card,
+    .submit-new-path-card {
+      border-radius: 7px !important;
+      box-shadow: none !important;
+    }
+
     .option-card.preselected,
-    .option-card.submit-new-path-card.preselected {
+    .submit-new-path-card.preselected {
       border-color: var(--accent, #1d9bf0) !important;
       box-shadow: none !important;
       transform: translateY(-2px) !important;
+      opacity: 1 !important;
     }
 
     .option-card.preselected .primary,
@@ -3758,19 +3765,26 @@
     }
 
     .option-card.preselected .selected-pill,
-    .option-card.submit-new-path-card.preselected .selected-pill {
+    .submit-new-path-card.preselected .selected-pill {
       color: var(--accent, #1d9bf0) !important;
       border-color: var(--accent, #1d9bf0) !important;
       background: transparent !important;
     }
 
-    #options.submit-path-selected .option-card:not(.submit-new-path-card) {
-      display: none !important;
+    .submit-new-path-card.preselected .option-copy {
+      color: var(--accent, #1d9bf0) !important;
     }
 
-    #options.submit-path-selected .submit-new-path-card {
-      border-color: var(--accent, #1d9bf0) !important;
-      transform: translateY(-2px) !important;
+    .option-card:active,
+    .submit-new-path-card:active {
+      transform: translateY(0) !important;
+    }
+
+    @media (hover: none) {
+      .option-card:hover,
+      .submit-new-path-card:hover {
+        box-shadow: none !important;
+      }
     }
 
 </style>
@@ -4703,8 +4717,6 @@
       instruction.textContent = cat.phase === "foundation_select"
         ? `Pick the strongest foundation. Your choice starts the progression and pressures the other foundations toward shedding.`
         : `Pick the strongest direction. Your choice upvotes it and pressures the others toward collapse.`;
-
-      options.classList.toggle("submit-path-selected", !!cat.frontierSubmitOpen);
 
       if (cat.completeVoteSubmitted && !cat.completed) {
         options.innerHTML = `<div class="empty">${name} COMPLETE vote recorded. This completion attempt is closed for this session.</div>`;
