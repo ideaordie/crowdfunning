@@ -4679,9 +4679,9 @@
               <div class="commit-card-action">
                 <div class="card-action-row">
                   <button class="primary commit-progression-btn" type="button">COMMIT TO PROGRESSION</button>
-                  <button class="primary card-complete-btn" type="button">${state.activeCategory || "CATEGORY"} COMPLETE</button>
+                  ${cat.phase !== "foundation_select" ? `<button class="primary card-complete-btn" type="button">${state.activeCategory || "CATEGORY"} COMPLETE</button>` : ""}
                 </div>
-                <div class="commit-note">Commit to keep building from this card, or complete if this path feels finished.</div>
+                <div class="commit-note">${cat.phase === "foundation_select" ? "Commit this foundation to begin the live path." : "Commit to keep building from this card, or complete if this path feels finished."}</div>
               </div>
             ` : ""}
           `;
@@ -4951,6 +4951,11 @@
       const cat = state.categories[state.activeCategory];
 
       if (!cat || state.activeCategory !== "JOKE" || !cat.liveEntry) return;
+
+      if (cat.phase === "foundation_select") {
+        alert("Complete voting unlocks after the foundation has been committed and the path has begun.");
+        return;
+      }
 
       if (!cat.preselectedDirectionId) {
         alert("Please select a path before voting to complete.");
