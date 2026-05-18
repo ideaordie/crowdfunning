@@ -4280,6 +4280,34 @@
       }
     }
 
+    function getCategorySlug(categoryName) {
+      const cat = state.categories && state.categories[categoryName];
+      return String((cat && cat.slug) || categoryName || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-");
+    }
+
+    function hasFoundationGatePassed(cat) {
+      return !!(cat && (cat.liveFoundationGatePassed || cat.jokeFoundationGatePassed));
+    }
+
+    function hasFirstFoundationCommitted(cat) {
+      return !!(cat && (cat.liveFirstFoundationCommitted || cat.jokeFirstFoundationCommitted));
+    }
+
+    function setFoundationGatePassed(cat, value) {
+      if (!cat) return;
+      cat.liveFoundationGatePassed = !!value;
+      cat.jokeFoundationGatePassed = !!value;
+    }
+
+    function setFirstFoundationCommitted(cat, value) {
+      if (!cat) return;
+      cat.liveFirstFoundationCommitted = !!value;
+      cat.jokeFirstFoundationCommitted = !!value;
+    }
+
     async function loadCategoriesFromSupabase() {
       try {
         console.log("CROWD FUNNING: requesting live categories from Supabase...");
@@ -4314,6 +4342,7 @@
           }
 
           state.categories[name].name = name;
+          state.categories[name].slug = String(data[index].slug || name).trim().toLowerCase();
         });
 
         Object.keys(state.categories).forEach(name => {
@@ -4428,27 +4457,21 @@
 
 
     async function loadLiveEntryForCategory(categoryName) {
-      const slug = String(categoryName || "").toLowerCase();
+      const slug = getCategorySlug(categoryName);
       const cat = state.categories[categoryName];
 
       if (!cat) return false;
 
       try {
-        const desiredDirectionType =
-          categoryName === "JOKE" && !cat.jokeFirstFoundationCommitted
-            ? "foundation"
-            : "direction";
+        const foundationCommitted = hasFirstFoundationCommitted(cat);
 
-        const desiredNodeId =
-          categoryName === "JOKE"
-            ? (cat.liveCurrentNodeId || null)
-            : null;
+        const desiredDirectionType = !foundationCommitted
+          ? "foundation"
+          : "direction";
 
-        if (
-          categoryName === "JOKE" &&
-          cat.jokeFirstFoundationCommitted &&
-          !desiredNodeId
-        ) {
+        const desiredNodeId = cat.liveCurrentNodeId || null;
+
+        if (foundationCommitted && !desiredNodeId) {
           console.log("CROWD FUNNING: no next_node_id found. Opening Frontier panel.");
           cat.options = [];
           cat.frontierOpen = true;
@@ -4472,13 +4495,10 @@
           .select("*")
           .eq("category_slug", slug);
 
-        if (categoryName === "JOKE") {
-          query = query
-            .eq("direction_type", desiredDirectionType);
+        query = query.eq("direction_type", desiredDirectionType);
 
-          if (desiredNodeId) {
-            query = query.eq("node_id", desiredNodeId);
-          }
+        if (desiredNodeId) {
+          query = query.eq("node_id", desiredNodeId);
         }
 
         const { data, error } = await query
@@ -4555,7 +4575,7 @@
           attributionHandle: direction.attributionHandle || ""
         }));
 
-        cat.phase = cat.jokeFirstFoundationCommitted ? "direction_select" : "foundation_select";
+        cat.phase = hasFirstFoundationCommitted(cat) ? "direction_select" : "foundation_select";
         cat.foundationSubmitted = true;
         cat.frontierOpen = false;
         cat.completed = false;
@@ -4588,8 +4608,8 @@
     }
 
     async function refreshActiveLiveEntry() {
-      if (state.activeCategory === "JOKE") {
-        const loaded = await loadLiveEntryForCategory("JOKE");
+      if (state.activeCategory) {
+        const loaded = await loadLiveEntryForCategory(state.activeCategory);
         if (loaded) renderAll();
       }
     }
@@ -4599,7 +4619,7 @@
       state.activeCategory = name;
       cat.selections += 1;
 
-      if (name === "JOKE" && !cat.jokeFoundationGatePassed) {
+      if (!hasFoundationGatePassed(cat)) {
         cat.phase = "foundation_submit";
         cat.foundationSubmitted = false;
         cat.frontierOpen = false;
@@ -4611,7 +4631,7 @@
         cat.preselectedDirectionText = "";
         cat.preselectedOptionKey = null;
         cat.frontierSubmitOpen = false;
-        cat.jokeFirstFoundationCommitted = false;
+        setFirstFoundationCommitted(cat, false);
         cat.liveCurrentNodeId = null;
         cat.liveCurrentNodeKey = "ROOT";
         cat.currentPathId = null;
@@ -4849,7 +4869,7 @@
       const selected = cat.options[index];
       if (!selected) return;
 
-      if (state.activeCategory === "JOKE" && cat.liveEntry && selected.liveDirectionId) {
+      if (cat.liveEntry && selected.liveDirectionId) {
         cat.preselectedOptionIndex = index;
         cat.preselectedDirectionId = selected.liveDirectionId;
         cat.preselectedDirectionText = selected.text;
@@ -4908,7 +4928,7 @@
     }
 
     async function syncProgressionPath(cat) {
-      if (!cat || state.activeCategory !== "JOKE" || !cat.liveEntry) return null;
+      if (!cat || !state.activeCategory || !cat.liveEntry) return null;
       if (!Array.isArray(cat.progression) || !cat.progression.length) return null;
 
       const { pathKey, pathItems } = buildProgressionPathPayload(cat);
@@ -4956,7 +4976,7 @@
     }
 
     async function voteCurrentProgressionPath(cat, voteType) {
-      if (!cat || state.activeCategory !== "JOKE") return false;
+      if (!cat || !state.activeCategory) return false;
 
       if (!Array.isArray(cat.progression) || !cat.progression.length) {
         console.warn("CROWD FUNNING: skipped path vote because no approved path has been committed yet.", {
@@ -5026,7 +5046,7 @@
     async function completeSelectedCard() {
       const cat = state.categories[state.activeCategory];
 
-      if (!cat || state.activeCategory !== "JOKE" || !cat.liveEntry) return;
+      if (!cat || !state.activeCategory || !cat.liveEntry) return;
 
       if (cat.phase === "foundation_select") {
         alert("Complete voting unlocks after the foundation has been committed and the path has begun.");
@@ -5045,7 +5065,7 @@
       const completeAfterCommit = !!options.completeAfterCommit;
       const cat = state.categories[state.activeCategory];
 
-      if (!cat || state.activeCategory !== "JOKE" || !cat.liveEntry) return;
+      if (!cat || !state.activeCategory || !cat.liveEntry) return;
 
       const selected = cat.options.find(opt => opt.liveDirectionId === cat.preselectedDirectionId);
 
@@ -5099,8 +5119,8 @@
         cat.liveCurrentNodeId = selected.nextNodeId || null;
         cat.liveCurrentNodeKey = selected.nextNodeKey || selected.optionKey || selected.text;
 
-        if (!cat.jokeFirstFoundationCommitted) {
-          cat.jokeFirstFoundationCommitted = true;
+        if (!hasFirstFoundationCommitted(cat)) {
+          setFirstFoundationCommitted(cat, true);
           cat.phase = "direction_select";
         }
 
@@ -5112,15 +5132,12 @@
 
         await syncProgressionPath(cat);
 
-        const loaded = await loadLiveEntryForCategory("JOKE");
+        const loaded = await loadLiveEntryForCategory(state.activeCategory);
 
         if (!loaded) {
           cat.options = [];
           cat.frontierOpen = true;
-          cat.liveEntry = cat.liveEntry || {
-            entryId: path.entry_id || null,
-            nodeId: lastItem ? (lastItem.parentNodeId || lastItem.nextNodeId || null) : null
-          };
+          cat.liveEntry = cat.liveEntry || null;
         }
 
         saveState();
@@ -5180,7 +5197,7 @@
         cat.submissionCount = (cat.submissionCount || 0) + 1;
       }
 
-      if (state.activeCategory === "JOKE") {
+      if (state.activeCategory) {
         if (submittedText) {
           const notificationRequest = getNotificationRequest("foundation");
           if (notificationRequest.wantsNotification && !notificationRequest.email) {
@@ -5208,14 +5225,14 @@
             const { data: rootRows, error: rootError } = await crowdFunningSupabase
               .from("active_entry_directions")
               .select("entry_id,node_id")
-              .eq("category_slug", "joke")
+              .eq("category_slug", getCategorySlug(state.activeCategory))
               .eq("direction_type", "foundation")
               .eq("node_key", "ROOT")
               .limit(1);
 
             if (rootError || !rootRows || !rootRows.length) {
-              console.error("CROWD FUNNING: could not find active JOKE ROOT node.", rootError);
-              alert("Foundation submission failed. Active JOKE ROOT node was not found.");
+              console.error("CROWD FUNNING: could not find active category ROOT node.", rootError);
+              alert("Foundation submission failed. Active category ROOT node was not found.");
               return;
             }
 
@@ -5239,7 +5256,7 @@
               await storeSubmissionNotification({
                 submissionId,
                 submissionType: "foundation",
-                categorySlug: "joke",
+                categorySlug: getCategorySlug(state.activeCategory),
                 pathId: null,
                 email: notificationRequest.email
               });
@@ -5259,8 +5276,8 @@
 
         cat.phase = "foundation_select";
         cat.foundationSubmitted = !skipOnly;
-        cat.jokeFoundationGatePassed = true;
-        cat.jokeFirstFoundationCommitted = false;
+        setFoundationGatePassed(cat, true);
+        setFirstFoundationCommitted(cat, false);
         cat.liveCurrentNodeId = null;
         cat.liveCurrentNodeKey = "ROOT";
         cat.currentPathId = null;
@@ -5281,7 +5298,7 @@
         saveState();
         renderAll();
 
-        await loadJokeAfterFoundationGate();
+        await loadCategoryAfterFoundationGate();
         return;
       }
 
@@ -5308,20 +5325,20 @@
       renderAll();
     }
 
-    async function loadJokeAfterFoundationGate() {
+    async function loadCategoryAfterFoundationGate() {
       const cat = state.categories[state.activeCategory];
 
-      if (!cat || state.activeCategory !== "JOKE") return false;
+      if (!cat || !state.activeCategory) return false;
 
       cat.liveLoading = true;
-      cat.phase = cat.jokeFirstFoundationCommitted ? "direction_select" : "foundation_select";
+      cat.phase = hasFirstFoundationCommitted(cat) ? "direction_select" : "foundation_select";
       saveState();
       renderAll();
 
-      const loaded = await loadLiveEntryForCategory("JOKE");
+      const loaded = await loadLiveEntryForCategory(state.activeCategory);
 
       cat.liveLoading = false;
-      cat.phase = cat.jokeFirstFoundationCommitted ? "direction_select" : "foundation_select";
+      cat.phase = hasFirstFoundationCommitted(cat) ? "direction_select" : "foundation_select";
 
       if (!loaded) {
         cat.phase = "foundation_select";
@@ -5359,7 +5376,7 @@
         return false;
       }
 
-      if (state.activeCategory === "JOKE") {
+      if (state.activeCategory) {
         const notificationRequest = getNotificationRequest("frontier");
         if (notificationRequest.wantsNotification && !notificationRequest.email) {
           alert("Enter an email address for notifications, or uncheck Notify me.");
@@ -5473,7 +5490,7 @@
             await storeSubmissionNotification({
               submissionId,
               submissionType: "frontier",
-              categorySlug: "joke",
+              categorySlug: getCategorySlug(state.activeCategory),
               pathId: cat.currentPathId || null,
               email: notificationRequest.email
             });
@@ -5551,7 +5568,7 @@
         if (!submittedOk) return;
       }
 
-      if (state.activeCategory === "JOKE") {
+      if (state.activeCategory) {
         const voteOk = await voteCurrentProgressionPath(cat, "complete");
 
         if (!voteOk) {
@@ -6033,8 +6050,8 @@ ${siteUrl}`;
       cat.progression = items;
       cat.phase = items.length ? "direction_select" : "foundation_select";
       cat.foundationSubmitted = true;
-      cat.jokeFoundationGatePassed = true;
-      cat.jokeFirstFoundationCommitted = items.length > 0;
+      setFoundationGatePassed(cat, true);
+      setFirstFoundationCommitted(cat, items.length > 0);
       cat.frontierOpen = false;
       cat.frontierSubmitOpen = false;
       cat.liveLoading = false;
@@ -6063,8 +6080,8 @@ ${siteUrl}`;
 
       showHome();
 
-      if (categoryName === "JOKE" && items.length) {
-        const loaded = await loadLiveEntryForCategory("JOKE");
+      if (items.length) {
+        const loaded = await loadLiveEntryForCategory(categoryName);
         if (!loaded) {
           cat.options = [];
           cat.frontierOpen = true;
@@ -6348,27 +6365,30 @@ ${siteUrl}`;
       await loadCategoriesFromSupabase();
       await loadCategoryActivitySummary();
 
-      if (state.categories.JOKE && !state.categories.JOKE.jokeFoundationGatePassed && state.categories.JOKE.liveEntry) {
-        state.categories.JOKE.liveEntry = null;
-        state.categories.JOKE.phase = "foundation_submit";
-        state.categories.JOKE.foundationSubmitted = false;
-        state.categories.JOKE.liveLoading = false;
-        state.categories.JOKE.options = [];
-        state.categories.JOKE.preselectedOptionIndex = null;
-        state.categories.JOKE.preselectedDirectionId = null;
-        state.categories.JOKE.preselectedDirectionText = "";
-        state.categories.JOKE.jokeFirstFoundationCommitted = false;
-        saveState();
-      }
+      Object.keys(state.categories || {}).forEach(name => {
+        const cat = state.categories[name];
+        if (cat && !hasFoundationGatePassed(cat) && cat.liveEntry) {
+          cat.liveEntry = null;
+          cat.phase = "foundation_submit";
+          cat.foundationSubmitted = false;
+          cat.liveLoading = false;
+          cat.options = [];
+          cat.preselectedOptionIndex = null;
+          cat.preselectedDirectionId = null;
+          cat.preselectedDirectionText = "";
+          setFirstFoundationCommitted(cat, false);
+        }
+      });
+      saveState();
 
       const activeCat = state.categories[state.activeCategory];
       if (
-        state.activeCategory === "JOKE" &&
+        state.activeCategory &&
         activeCat &&
-        activeCat.jokeFoundationGatePassed &&
+        hasFoundationGatePassed(activeCat) &&
         activeCat.phase !== "foundation_submit"
       ) {
-        await loadLiveEntryForCategory("JOKE");
+        await loadLiveEntryForCategory(state.activeCategory);
       }
 
       renderAll();
