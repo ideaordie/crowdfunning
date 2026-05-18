@@ -6682,6 +6682,94 @@ ${siteUrl}`;
   }
 </style>
 
+
+<style id="v1-7-39-borderless-soft-panels">
+  /* Borderless soft panel treatment */
+  body:not(.light-mode) .panel,
+  body:not(.light-mode) .category-panel,
+  body:not(.light-mode) #directionsPanel,
+  body:not(.light-mode) #foundationBox,
+  body:not(.light-mode) #frontierBox,
+  body:not(.light-mode) #progression,
+  body:not(.light-mode) #completionPanel,
+  body:not(.light-mode) #completionProgress,
+  body:not(.light-mode) .trending-panel,
+  body:not(.light-mode) .trending-page-panel {
+    background: #080808 !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  body.light-mode .panel,
+  body.light-mode .category-panel,
+  body.light-mode #directionsPanel,
+  body.light-mode #foundationBox,
+  body.light-mode #frontierBox,
+  body.light-mode #progression,
+  body.light-mode #completionPanel,
+  body.light-mode #completionProgress,
+  body.light-mode .trending-panel,
+  body.light-mode .trending-page-panel {
+    background: #f7f9f9 !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+</style>
+
+
+<style id="v1-7-40-completion-progress-soft-panel-fix">
+  /* Force top COMPLETION PROGRESS panel to match borderless soft panel treatment */
+  body:not(.light-mode) .progress-panel,
+  body:not(.light-mode) .completion-progress-panel,
+  body:not(.light-mode) .completion-progress,
+  body:not(.light-mode) .status-panel,
+  body:not(.light-mode) #progressPanel,
+  body:not(.light-mode) #completionProgressPanel,
+  body:not(.light-mode) #completionProgress,
+  body:not(.light-mode) #categoryProgress,
+  body:not(.light-mode) [data-panel="completion-progress"] {
+    background: #080808 !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  body.light-mode .progress-panel,
+  body.light-mode .completion-progress-panel,
+  body.light-mode .completion-progress,
+  body.light-mode .status-panel,
+  body.light-mode #progressPanel,
+  body.light-mode #completionProgressPanel,
+  body.light-mode #completionProgress,
+  body.light-mode #categoryProgress,
+  body.light-mode [data-panel="completion-progress"] {
+    background: #f7f9f9 !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+</style>
+
+
+<style id="v1-7-41-category-progress-card-borderless-fix">
+  /* Direct fix for the top CATEGORY WAITING / COMPLETION PROGRESS panel */
+  body:not(.light-mode) .category-progress-card {
+    background: #080808 !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  body.light-mode .category-progress-card {
+    background: #f7f9f9 !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+</style>
+
 </body>
 </html>
 
