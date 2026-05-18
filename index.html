@@ -4460,16 +4460,23 @@
         }
 
         const maxScroll = Math.max(0, list.scrollWidth - list.clientWidth);
-        const next = list.scrollLeft + categoryHoverScrollDirection * 7;
+        const speed = categoryHoverScrollDirection < 0 ? 10 : 7;
+        const next = list.scrollLeft + categoryHoverScrollDirection * speed;
 
-        list.scrollLeft = Math.max(0, Math.min(maxScroll, next));
+        if (categoryHoverScrollDirection < 0) {
+          list.scrollLeft = Math.max(0, next);
+        } else {
+          list.scrollLeft = Math.min(maxScroll, next);
+        }
 
         if (list.scrollLeft <= 0 && categoryHoverScrollDirection < 0) {
+          list.scrollLeft = 0;
           stopCategoryHoverScroll();
           return;
         }
 
         if (list.scrollLeft >= maxScroll && categoryHoverScrollDirection > 0) {
+          list.scrollLeft = maxScroll;
           stopCategoryHoverScroll();
           return;
         }
@@ -7133,6 +7140,33 @@ ${siteUrl}`;
   @media (max-width: 699px) {
     .category-hover-zone {
       display: none !important;
+    }
+  }
+</style>
+
+
+<style id="v1-8-2-left-hover-scroll-fix">
+  /* Improve left-edge desktop hover scrolling so it can always return to the first category */
+  @media (min-width: 700px) {
+    .category-hover-zone {
+      width: 110px !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      z-index: 80 !important;
+    }
+
+    .category-hover-left {
+      left: 0 !important;
+    }
+
+    .category-hover-right {
+      right: 0 !important;
+    }
+
+    #categoryPanel.hover-scroll-left::before,
+    #categoryPanel.hover-scroll-right::after {
+      width: 110px !important;
+      z-index: 70 !important;
     }
   }
 </style>
