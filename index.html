@@ -6822,6 +6822,76 @@ ${siteUrl}`;
   }
 </style>
 
+
+<style id="v1-7-44-category-wrapper-detach-fix">
+  /* Detach CATEGORY button wrapper from shared panel styling */
+  body:not(.light-mode) .category-strip,
+  body:not(.light-mode) .category-selector-wrap,
+  body:not(.light-mode) .category-buttons-wrap,
+  body:not(.light-mode) .category-grid-wrap,
+  body:not(.light-mode) .category-grid-container,
+  body:not(.light-mode) .category-grid,
+  body:not(.light-mode) .categories,
+  body:not(.light-mode) #categories,
+  body:not(.light-mode) #categoryGrid,
+  body:not(.light-mode) #categoriesPanel {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  body.light-mode .category-strip,
+  body.light-mode .category-selector-wrap,
+  body.light-mode .category-buttons-wrap,
+  body.light-mode .category-grid-wrap,
+  body.light-mode .category-grid-container,
+  body.light-mode .category-grid,
+  body.light-mode .categories,
+  body.light-mode #categories,
+  body.light-mode #categoryGrid,
+  body.light-mode #categoriesPanel {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+</style>
+
+
+<style id="v1-7-45-category-panel-transparent-fix">
+  /* Exact fix: remove fill behind CATEGORY buttons */
+  body #categoryPanel.category-panel,
+  body #categoryPanel,
+  body #categoryPanel .category-list,
+  body #categoryList {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  body.light-mode #categoryPanel.category-panel,
+  body.light-mode #categoryPanel,
+  body.light-mode #categoryPanel .category-list,
+  body.light-mode #categoryList,
+  body:not(.light-mode) #categoryPanel.category-panel,
+  body:not(.light-mode) #categoryPanel,
+  body:not(.light-mode) #categoryPanel .category-list,
+  body:not(.light-mode) #categoryList {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+</style>
+
 </body>
 </html>
 
