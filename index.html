@@ -7283,6 +7283,25 @@ ${siteUrl}`;
   }
 </style>
 
+
+<style id="v1-8-5-category-hover-zone-click-fix">
+  /* Prevent invisible desktop hover zones from blocking category button clicks */
+  .category-hover-zone,
+  #categoryHoverLeft,
+  #categoryHoverRight {
+    pointer-events: none !important;
+  }
+
+  #categoryPanel {
+    pointer-events: auto !important;
+  }
+
+  #categoryList,
+  #categoryList .cat-card {
+    pointer-events: auto !important;
+  }
+</style>
+
 </body>
 </html>
 
