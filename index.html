@@ -4338,6 +4338,44 @@
     }
 
 
+    async function loadCategoryActivitySummary() {
+      try {
+        console.log("CROWD FUNNING: requesting category activity summary...");
+
+        const { data, error } = await crowdFunningSupabase
+          .from("category_activity_summary")
+          .select("category_slug,category_name,selection_count,max_steps,is_live,is_hot,hot_score");
+
+        if (error) {
+          console.error("CROWD FUNNING: category activity summary load failed.", error);
+          return false;
+        }
+
+        if (!Array.isArray(data)) return false;
+
+        data.forEach(row => {
+          const name = String(row.category_name || row.category_slug || "").trim().toUpperCase();
+          if (!name || !state.categories || !state.categories[name]) return;
+
+          state.categories[name].activitySummary = {
+            selectionCount: Number(row.selection_count || 0),
+            maxSteps: Number(row.max_steps || 0),
+            isLive: !!row.is_live,
+            isHot: !!row.is_hot,
+            hotScore: Number(row.hot_score || 0)
+          };
+        });
+
+        saveState();
+        console.log("CROWD FUNNING: category activity summary loaded:", data);
+        return true;
+      } catch (err) {
+        console.error("CROWD FUNNING: unexpected category activity summary error:", err);
+        return false;
+      }
+    }
+
+
     function setAccent(category) {
       const [accent, soft] = colorForCategory(category);
       document.documentElement.style.setProperty("--accent", accent);
@@ -4371,11 +4409,16 @@
         const [catAccent, catSoft] = colorForCategory(cat.name);
         card.style.setProperty("--accent", catAccent);
         card.style.setProperty("--accent-soft", catSoft);
+        const activity = cat.activitySummary || {};
+        const shownSelections = Number.isFinite(activity.selectionCount) ? activity.selectionCount : cat.selections;
+        const shownSteps = Number.isFinite(activity.maxSteps) ? activity.maxSteps : cat.progression.length;
+        const statusLabel = cat.completed ? "ARCHIVED" : activity.isHot ? "HOT" : activity.isLive ? "LIVE" : "QUIET";
+
         card.innerHTML = `
           <div class="cat-name">${cat.name}</div>
-          <div class="count">${cat.selections.toLocaleString()} selections</div>
-          <div class="count">${cat.completed ? "COMPLETE" : cat.progression.length + " steps"}</div>
-          <div class="trend">${cat.completed ? "ARCHIVED" : cat.selections > 30000 ? "🔥 HOT" : "LIVE"}</div>
+          <div class="count">${shownSelections.toLocaleString()} selections</div>
+          <div class="count">${cat.completed ? "COMPLETE" : shownSteps + " steps"}</div>
+          <div class="trend">${statusLabel}</div>
         `;
         card.addEventListener("click", () => selectCategory(cat.name));
         list.appendChild(card);
@@ -6154,6 +6197,7 @@ ${siteUrl}`;
       initializeAppearanceMode();
       await initializeSupabaseAuth();
       await loadCategoriesFromSupabase();
+      await loadCategoryActivitySummary();
 
       if (state.categories.JOKE && !state.categories.JOKE.jokeFoundationGatePassed && state.categories.JOKE.liveEntry) {
         state.categories.JOKE.liveEntry = null;
