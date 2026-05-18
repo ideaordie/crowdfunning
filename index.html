@@ -4180,6 +4180,7 @@
     let state = loadState();
     let archiveFilter = "ALL";
     let archiveSearch = "";
+    let trendingPaths = [];
 
 
     function loadState() {
@@ -5918,6 +5919,32 @@ ${siteUrl}`;
       renderAll();
     }
 
+    async function loadTrendingPaths() {
+      try {
+        console.log("CROWD FUNNING: requesting trending paths...");
+
+        const { data, error } = await crowdFunningSupabase
+          .from("trending_paths")
+          .select("path_id,category_slug,category_name,entry_id,path_items,foundation_text,complete_votes,new_path_votes,completion_percent,step_count,trending_score")
+          .order("category_name", { ascending: true })
+          .order("trending_score", { ascending: false });
+
+        if (error) {
+          console.error("CROWD FUNNING: trending path load failed.", error);
+          trendingPaths = [];
+          return false;
+        }
+
+        trendingPaths = Array.isArray(data) ? data : [];
+        console.log("CROWD FUNNING: trending paths loaded:", trendingPaths);
+        return true;
+      } catch (err) {
+        console.error("CROWD FUNNING: unexpected trending path load error:", err);
+        trendingPaths = [];
+        return false;
+      }
+    }
+
     function getTrendingFoundationText(cat) {
       if (Array.isArray(cat.progression) && cat.progression.length) {
         const first = cat.progression[0];
@@ -5931,46 +5958,149 @@ ${siteUrl}`;
       return cat.prompt || "No active path yet.";
     }
 
+    function getTrendingPathFoundationText(path) {
+      if (path && path.foundation_text) return path.foundation_text;
+
+      const items = path && Array.isArray(path.path_items) ? path.path_items : [];
+      if (items.length) {
+        const first = items[0];
+        return first.text || String(first);
+      }
+
+      return "No foundation text available.";
+    }
+
+    function normalizeTrendingPathItems(path) {
+      if (!path) return [];
+
+      let items = path.path_items || [];
+
+      if (typeof items === "string") {
+        try {
+          items = JSON.parse(items);
+        } catch (err) {
+          console.error("CROWD FUNNING: could not parse trending path_items.", err);
+          items = [];
+        }
+      }
+
+      if (!Array.isArray(items)) return [];
+
+      return items.map((item, index) => ({
+        index,
+        text: item && item.text ? item.text : String(item || ""),
+        originator: item && item.originator ? item.originator : "",
+        optionKey: item && item.optionKey ? item.optionKey : "",
+        directionId: item && item.directionId ? item.directionId : null,
+        parentNodeId: item && item.parentNodeId ? item.parentNodeId : null,
+        nextNodeId: item && item.nextNodeId ? item.nextNodeId : null,
+        nextNodeKey: item && item.nextNodeKey ? item.nextNodeKey : ""
+      })).filter(item => item.text);
+    }
+
+    async function continueTrendingPath(path) {
+      if (!path) return;
+
+      const categoryName = String(path.category_name || path.category_slug || "JOKE").trim().toUpperCase();
+
+      if (!state.categories[categoryName]) {
+        state.categories[categoryName] = createCategoryState(categoryName, 0);
+      }
+
+      const cat = state.categories[categoryName];
+      const items = normalizeTrendingPathItems(path);
+      const lastItem = items.length ? items[items.length - 1] : null;
+
+      state.activeCategory = categoryName;
+
+      cat.name = categoryName;
+      cat.progression = items;
+      cat.phase = items.length ? "direction_select" : "foundation_select";
+      cat.foundationSubmitted = true;
+      cat.jokeFoundationGatePassed = true;
+      cat.jokeFirstFoundationCommitted = items.length > 0;
+      cat.frontierOpen = false;
+      cat.frontierSubmitOpen = false;
+      cat.liveLoading = false;
+      cat.liveEntry = null;
+      cat.options = [];
+      cat.preselectedOptionIndex = null;
+      cat.preselectedDirectionId = null;
+      cat.preselectedDirectionText = "";
+      cat.preselectedOptionKey = null;
+      cat.previouslyCommittedDirectionId = lastItem ? lastItem.directionId : null;
+      cat.liveCurrentNodeId = lastItem ? (lastItem.nextNodeId || null) : null;
+      cat.liveCurrentNodeKey = lastItem ? (lastItem.nextNodeKey || lastItem.optionKey || lastItem.text) : "ROOT";
+      cat.currentPathId = path.path_id || null;
+      cat.currentPathKey = items
+        .map(item => item.directionId || item.optionKey || item.text)
+        .join(">");
+      cat.completeVotes = Number(path.complete_votes || 0);
+      cat.submitVotes = Number(path.new_path_votes || 0);
+      cat.pathStatus = "active";
+      cat.completeVoteSubmitted = false;
+
+      saveState();
+
+      showHome();
+
+      if (categoryName === "JOKE" && items.length) {
+        const loaded = await loadLiveEntryForCategory("JOKE");
+        if (!loaded) {
+          cat.options = [];
+          cat.frontierOpen = true;
+        }
+      }
+
+      saveState();
+      renderAll();
+    }
+
     function renderTrending() {
       const list = document.getElementById("trendingList");
       if (!list) return;
 
-      const order = state.categoryOrder || Object.keys(state.categories || {});
-      const categories = order
-        .map(name => state.categories[name])
-        .filter(Boolean);
-
       list.innerHTML = "";
 
-      categories.forEach(cat => {
+      const grouped = new Map();
+
+      trendingPaths.forEach(path => {
+        const categoryName = String(path.category_name || path.category_slug || "CATEGORY").trim().toUpperCase();
+        if (!grouped.has(categoryName)) grouped.set(categoryName, []);
+        if (grouped.get(categoryName).length < 3) {
+          grouped.get(categoryName).push(path);
+        }
+      });
+
+      const order = state.categoryOrder || Object.keys(state.categories || {});
+
+      order.forEach(categoryName => {
+        const paths = grouped.get(categoryName) || [];
+
         const block = document.createElement("div");
         block.className = "trending-category-block";
 
         const title = document.createElement("div");
         title.className = "trending-category-title";
-        title.textContent = cat.name;
+        title.textContent = categoryName;
         block.appendChild(title);
 
-        const hasActivePath = Array.isArray(cat.progression) && cat.progression.length > 0;
-
-        if (!hasActivePath) {
+        if (!paths.length) {
           const empty = document.createElement("div");
           empty.className = "trending-empty";
           empty.textContent = "No active trending paths yet.";
           block.appendChild(empty);
         } else {
-          for (let index = 0; index < 3; index += 1) {
-            const totalFinishVotes = (cat.submitVotes || 0) + (cat.completeVotes || 0);
-            const completePct = totalFinishVotes
-              ? Math.round(((cat.completeVotes || 0) / totalFinishVotes) * 100)
-              : 0;
+          paths.forEach((path, index) => {
+            const completePct = Number(path.completion_percent || 0);
+            const stepCount = Number(path.step_count || 0);
 
             const card = document.createElement("div");
             card.className = "trending-path-card";
             card.innerHTML = `
-              <div class="trending-foundation-text">${getTrendingFoundationText(cat)}</div>
+              <div class="trending-foundation-text">${getTrendingPathFoundationText(path)}</div>
               <div class="trending-card-footer">
-                <div class="trending-status">${completePct}% COMPLETE · PATH ${index + 1}</div>
+                <div class="trending-status">${completePct}% COMPLETE · ${stepCount} STEP${stepCount === 1 ? "" : "S"} · PATH ${index + 1}</div>
                 <button class="primary trending-continue-btn" type="button">CONTINUE</button>
               </div>
             `;
@@ -5978,25 +6108,25 @@ ${siteUrl}`;
             const button = card.querySelector(".trending-continue-btn");
             if (button) {
               button.addEventListener("click", () => {
-                state.activeCategory = cat.name;
-                showHome();
-                renderAll();
+                console.log("CROWD FUNNING: continue trending path requested:", path);
+                continueTrendingPath(path);
               });
             }
 
             block.appendChild(card);
-          }
+          });
         }
 
         list.appendChild(block);
       });
     }
 
-    function showTrending() {
+    async function showTrending() {
       document.getElementById("homeView").classList.add("hidden");
       document.getElementById("trendingView").classList.remove("hidden");
       document.getElementById("aboutView").classList.add("hidden");
       document.getElementById("archiveView").classList.add("hidden");
+      await loadTrendingPaths();
       renderTrending();
     }
 
