@@ -7673,6 +7673,81 @@ ${siteUrl}`;
   }
 </style>
 
+
+<style id="v1-8-21-completed-page-ui-cleanup">
+  /* COMPLETED page category filters: clean responsive grid */
+  #archiveView .archive-filter-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+  }
+
+  #archiveView .filter-chip {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  @media (min-width: 700px) {
+    #archiveView .archive-filter-row {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+  }
+
+  @media (max-width: 380px) {
+    #archiveView .archive-filter-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+
+  /* Completed cards: only show foundation, date, and author */
+  #archiveView .archive-summary::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  #archiveView .archive-summary {
+    grid-template-columns: 1fr auto !important;
+    align-items: center !important;
+    gap: 8px 12px !important;
+  }
+
+  #archiveView .archive-entry-title {
+    min-width: 0 !important;
+  }
+
+  #archiveView .archive-entry-meta {
+    text-align: right !important;
+    margin-top: 0 !important;
+    min-width: 96px !important;
+  }
+
+  @media (max-width: 520px) {
+    #archiveView .archive-summary {
+      grid-template-columns: 1fr 112px !important;
+      padding: 12px !important;
+    }
+
+    #archiveView .archive-entry-title {
+      font-size: clamp(14px, 4.3vw, 18px) !important;
+      line-height: 1.18 !important;
+    }
+
+    #archiveView .archive-entry-meta {
+      font-size: clamp(10px, 3vw, 12px) !important;
+      line-height: 1.15 !important;
+      min-width: 0 !important;
+    }
+  }
+</style>
+
 </body>
 </html>
 
