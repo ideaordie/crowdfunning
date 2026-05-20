@@ -6252,9 +6252,25 @@ ${siteUrl}`;
               return `
                 <div class="archive-item">
                   <button class="archive-summary" data-target="${detailId}">
-                    <span class="archive-entry-title">${item.completedName || generateCompletedName(item.name, item.progression)}</span>
-                    <span class="archive-entry-meta">${item.name} COMPLETE • ${item.completedAt}</span>
-                    <span class="archive-entry-meta">${item.selections.toLocaleString()} selections${item.submissionCount ? " • " + item.submissionCount + " submissions" : ""}${item.completionShare ? " • " + item.completionShare + "% COMPLETE vote" : ""} • TAP TO EXPAND</span>
+                    <span class="archive-entry-title">${(item.progression && item.progression[0] && item.progression[0].text) || item.completedName || generateCompletedName(item.name, item.progression)}</span>
+                    <span class="archive-entry-meta">
+                      ${(() => {
+                        const completedDate = item.completedAt
+                          ? new Date(item.completedAt).toLocaleDateString()
+                          : "";
+
+                        const foundationAuthor =
+                          (
+                            item.progression &&
+                            item.progression[0] &&
+                            item.progression[0].originator
+                          )
+                            ? item.progression[0].originator
+                            : "anonymous";
+
+                        return `${completedDate} • ${foundationAuthor}`;
+                      })()}
+                    </span>
                   </button>
                   <div class="archive-details" id="${detailId}">
                     <div class="progression" style="max-height:360px;overflow:auto;margin-top:10px;padding-right:4px;">
@@ -7564,6 +7580,31 @@ ${siteUrl}`;
 
   #archiveView .filter-chip {
     flex: 0 0 auto !important;
+  }
+</style>
+
+
+<style id="v1-8-19-completed-card-mobile-fix">
+  #archiveView .archive-summary {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #archiveView .archive-entry-title {
+    display: block !important;
+    width: 100% !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    line-height: 1.3 !important;
+    font-size: clamp(14px, 3.8vw, 16px) !important;
+  }
+
+  #archiveView .archive-entry-meta {
+    display: block !important;
+    margin-top: 6px !important;
+    font-size: clamp(11px, 2.7vw, 13px) !important;
+    opacity: 0.82 !important;
+    overflow-wrap: anywhere !important;
   }
 </style>
 
