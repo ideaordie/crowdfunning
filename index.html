@@ -4816,8 +4816,15 @@
       badge.textContent = `CURRENTLY TRENDING: ${name}`;
 
       if (cat.completed) {
-        storyText.textContent = cat.progression.length ? cat.progression[cat.progression.length - 1] : cat.prompt;
-        instruction.textContent = `${name} is complete. Review the final progression or open Completed Categories.`;
+        const lastEntry = cat.progression.length ? cat.progression[cat.progression.length - 1] : null;
+        storyText.textContent = lastEntry ? (lastEntry.text || String(lastEntry)) : cat.prompt;
+        instruction.textContent = `${name} is complete. Review, copy, listen to, or share the final progression.`;
+        directionsPanel.classList.add("completed-hide");
+        foundationBox.classList.add("completed-hide");
+        frontier.classList.remove("show");
+        optionModeLabel.style.display = "none";
+        options.style.display = "none";
+        options.innerHTML = "";
         renderProgression();
         renderCategoryProgress();
         return;
@@ -6188,6 +6195,61 @@ ${siteUrl}`;
       }
     }
 
+    function openCompletedPath(item) {
+      if (!item) return;
+
+      const categoryName = String(item.name || "JOKE").trim().toUpperCase();
+
+      if (!state.categories[categoryName]) {
+        state.categories[categoryName] = createCategoryState(categoryName, 0);
+      }
+
+      const cat = state.categories[categoryName];
+      const progression = Array.isArray(item.progression)
+        ? item.progression.map(entry => ({
+            text: entry && entry.text ? entry.text : String(entry || ""),
+            originator: entry && entry.originator ? entry.originator : "",
+            optionKey: entry && entry.optionKey ? entry.optionKey : "",
+            directionId: entry && entry.directionId ? entry.directionId : null,
+            parentNodeId: entry && entry.parentNodeId ? entry.parentNodeId : null,
+            nextNodeId: entry && entry.nextNodeId ? entry.nextNodeId : null,
+            nextNodeKey: entry && entry.nextNodeKey ? entry.nextNodeKey : ""
+          })).filter(entry => entry.text)
+        : [];
+
+      state.activeCategory = categoryName;
+
+      cat.name = categoryName;
+      cat.progression = progression;
+      cat.prompt = progression.length ? progression[0].text : (item.completedName || `${categoryName} COMPLETE`);
+      cat.completed = true;
+      cat.completedAt = item.completedAt || "";
+      cat.completedName = item.completedName || generateCompletedName(categoryName, progression);
+      cat.phase = "completed_readonly";
+      cat.foundationSubmitted = true;
+      setFoundationGatePassed(cat, true);
+      setFirstFoundationCommitted(cat, true);
+      cat.frontierOpen = false;
+      cat.frontierSubmitOpen = false;
+      cat.liveLoading = false;
+      cat.liveEntry = null;
+      cat.options = [];
+      cat.preselectedOptionIndex = null;
+      cat.preselectedDirectionId = null;
+      cat.preselectedDirectionText = "";
+      cat.preselectedOptionKey = null;
+      cat.currentPathId = item.id || null;
+      cat.currentPathKey = progression.map(entry => entry.directionId || entry.optionKey || entry.text).join(">");
+      cat.submitVotes = Math.max(0, Number(item.selections || 0) - Number(item.completionShare || 0));
+      cat.completeVotes = Number(item.selections || 0);
+      cat.pathStatus = "complete";
+      cat.completeVoteSubmitted = true;
+
+      saveState();
+      showHome();
+      renderProgressionPreview();
+    }
+
     function renderArchive() {
       const list = document.getElementById("archiveList");
       const filters = document.getElementById("archiveFilters");
@@ -6248,45 +6310,25 @@ ${siteUrl}`;
               <span class="archive-count-pill">${groupItems.length} completed</span>
             </div>
             ${groupItems.map((item, idx) => {
-              const detailId = `archive-${groupName}-${idx}-${Math.random().toString(36).slice(2)}`;
+              const completedDate = item.completedAt
+                ? new Date(item.completedAt).toLocaleDateString()
+                : "";
+
+              const foundationAuthor =
+                (
+                  item.progression &&
+                  item.progression[0] &&
+                  item.progression[0].originator
+                )
+                  ? item.progression[0].originator
+                  : "anonymous";
+
               return `
                 <div class="archive-item">
-                  <button class="archive-summary" data-target="${detailId}">
+                  <button class="archive-summary" data-completed-index="${idx}" data-completed-group="${groupName}">
                     <span class="archive-entry-title">${(item.progression && item.progression[0] && item.progression[0].text) || item.completedName || generateCompletedName(item.name, item.progression)}</span>
-                    <span class="archive-entry-meta">
-                      ${(() => {
-                        const completedDate = item.completedAt
-                          ? new Date(item.completedAt).toLocaleDateString()
-                          : "";
-
-                        const foundationAuthor =
-                          (
-                            item.progression &&
-                            item.progression[0] &&
-                            item.progression[0].originator
-                          )
-                            ? item.progression[0].originator
-                            : "anonymous";
-
-                        return `${completedDate} • ${foundationAuthor}`;
-                      })()}
-                    </span>
+                    <span class="archive-entry-meta">${completedDate} • ${foundationAuthor}</span>
                   </button>
-                  <div class="archive-details" id="${detailId}">
-                    <div class="progression" style="max-height:360px;overflow:auto;margin-top:10px;padding-right:4px;">
-                      ${(item.progression || []).map((entry, i) => {
-                        const text = entry.text || entry;
-                        const originator = entry.originator || "";
-                        return `
-                          <div class="step" style="--accent:${COLORS[item.name][0]}">
-                            <div class="step-number">${i === 0 ? "FOUNDATION" : "STEP " + i}</div>
-                            <div class="step-text">${text}</div>
-                            ${attributionHtml(originator)}
-                          </div>
-                        `;
-                      }).join("")}
-                    </div>
-                  </div>
                 </div>
               `;
             }).join("")}
@@ -6296,8 +6338,13 @@ ${siteUrl}`;
 
       list.querySelectorAll(".archive-summary").forEach(button => {
         button.addEventListener("click", () => {
-          const target = document.getElementById(button.dataset.target);
-          if (target) target.classList.toggle("open");
+          const groupName = button.dataset.completedGroup;
+          const index = Number(button.dataset.completedIndex);
+          const item = grouped[groupName] && grouped[groupName][index];
+
+          if (item) {
+            openCompletedPath(item);
+          }
         });
       });
     }
@@ -7605,6 +7652,24 @@ ${siteUrl}`;
     font-size: clamp(11px, 2.7vw, 13px) !important;
     opacity: 0.82 !important;
     overflow-wrap: anywhere !important;
+  }
+</style>
+
+
+<style id="v1-8-20-completed-open-readonly-view">
+  #archiveView .archive-summary {
+    cursor: pointer !important;
+  }
+
+  #archiveView .archive-summary::after {
+    content: "OPEN COMPLETED PATH";
+    margin-top: 8px;
+    color: var(--accent, #ffffff);
+    font-size: 10px;
+    font-weight: 1000;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.78;
   }
 </style>
 
