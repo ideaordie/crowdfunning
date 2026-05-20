@@ -3895,22 +3895,7 @@
 
     <section id="trendingView" class="hidden">
       <div class="panel trending-panel">
-        <div class="section-icon-title">
-          <span class="section-icon trending-icon">
-            <svg class="trending-arrow-svg" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M7 17L17 7M10 7H17V14"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"/>
-            </svg>
-          </span>
-          <h2 class="panel-title" style="margin:0;">Trending</h2>
-        </div>
-        <div class="instruction" style="margin-top:10px;">
-          Continue one of the strongest active paths and help push it forward.
-        </div>
+        <h2 class="panel-title">TRENDING</h2>
         <div class="trending-list" id="trendingList"></div>
       </div>
     </section>
@@ -6541,57 +6526,60 @@ ${siteUrl}`;
       trendingPaths.forEach(path => {
         const categoryName = String(path.category_name || path.category_slug || "CATEGORY").trim().toUpperCase();
         if (!grouped.has(categoryName)) grouped.set(categoryName, []);
+
+        // Show active foundation branches only, grouped by category.
         if (grouped.get(categoryName).length < 3) {
           grouped.get(categoryName).push(path);
         }
       });
 
       const order = state.categoryOrder || Object.keys(state.categories || {});
+      const visibleCategories = order.filter(categoryName => grouped.has(categoryName));
 
-      order.forEach(categoryName => {
+      if (!visibleCategories.length) {
+        list.innerHTML = `<div class="empty">No active trending paths yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = visibleCategories.map(categoryName => {
         const paths = grouped.get(categoryName) || [];
+        const [accent, soft] = colorForCategory(categoryName);
 
-        const block = document.createElement("div");
-        block.className = "trending-category-block";
+        return `
+          <div class="archive-group trending-archive-group" style="--accent:${accent};--accent-soft:${soft};">
+            <div class="archive-group-title">
+              <span>${categoryName}</span>
+              <span class="archive-count-pill">${paths.length} TRENDING</span>
+            </div>
+            ${paths.map((path, idx) => {
+              const foundationText = getTrendingPathFoundationText(path);
+              const stepCount = Number(path.step_count || 0);
+              const completePct = Math.round(Number(path.completion_percent || 0));
 
-        const title = document.createElement("div");
-        title.className = "trending-category-title";
-        title.textContent = categoryName;
-        block.appendChild(title);
+              return `
+                <div class="archive-item trending-archive-item">
+                  <button class="archive-summary trending-summary" data-trending-index="${idx}" data-trending-group="${categoryName}">
+                    <span class="archive-entry-title">${foundationText}</span>
+                    <span class="archive-entry-meta">${stepCount} STEP${stepCount === 1 ? "" : "S"} • ${completePct}% COMPLETE</span>
+                  </button>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `;
+      }).join("");
 
-        if (!paths.length) {
-          const empty = document.createElement("div");
-          empty.className = "trending-empty";
-          empty.textContent = "No active trending paths yet.";
-          block.appendChild(empty);
-        } else {
-          paths.forEach((path, index) => {
-            const completePct = Number(path.completion_percent || 0);
-            const stepCount = Number(path.step_count || 0);
+      list.querySelectorAll(".trending-summary").forEach(button => {
+        button.addEventListener("click", () => {
+          const groupName = button.dataset.trendingGroup;
+          const index = Number(button.dataset.trendingIndex);
+          const path = grouped.get(groupName) && grouped.get(groupName)[index];
 
-            const card = document.createElement("div");
-            card.className = "trending-path-card";
-            card.innerHTML = `
-              <div class="trending-foundation-text">${getTrendingPathFoundationText(path)}</div>
-              <div class="trending-card-footer">
-                <div class="trending-status">${Math.round(completePct)}% COMPLETE · ${stepCount} STEP${stepCount === 1 ? "" : "S"}</div>
-                <button class="primary trending-continue-btn" type="button">CONTINUE</button>
-              </div>
-            `;
-
-            const button = card.querySelector(".trending-continue-btn");
-            if (button) {
-              button.addEventListener("click", () => {
-                console.log("CROWD FUNNING: continue trending path requested:", path);
-                continueTrendingPath(path);
-              });
-            }
-
-            block.appendChild(card);
-          });
-        }
-
-        list.appendChild(block);
+          if (path) {
+            console.log("CROWD FUNNING: continue trending path requested:", path);
+            continueTrendingPath(path);
+          }
+        });
       });
     }
 
@@ -7935,6 +7923,93 @@ ${siteUrl}`;
       max-height: 40px !important;
 
       font-size: 12px !important;
+    }
+  }
+</style>
+
+
+<style id="v1-8-31-trending-matches-completed-page">
+  #trendingView .trending-list {
+    display: grid !important;
+    gap: 22px !important;
+    margin-top: 22px !important;
+  }
+
+  #trendingView .archive-group {
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  #trendingView .archive-item {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 0 10px 0 !important;
+    box-shadow: none !important;
+  }
+
+  #trendingView .archive-summary {
+    width: 100% !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 7px !important;
+    padding: 16px !important;
+    background:
+      radial-gradient(circle at top left, var(--accent-soft, rgba(255,255,255,0.08)), transparent 32%),
+      linear-gradient(180deg, rgba(12,12,16,0.98), rgba(4,4,6,1)) !important;
+    color: var(--text) !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    display: grid !important;
+    grid-template-columns: 1fr 112px !important;
+    align-items: center !important;
+    gap: 8px 12px !important;
+  }
+
+  #trendingView .archive-summary:hover {
+    border-color: var(--accent, #ffffff) !important;
+    box-shadow: 0 0 22px var(--accent-soft, rgba(255,255,255,0.12)) !important;
+  }
+
+  #trendingView .archive-entry-title {
+    color: var(--accent, #ffffff) !important;
+    font-weight: 1000 !important;
+    font-size: clamp(14px, 3.2vw, 16px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.015em !important;
+
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+
+    max-height: calc(1.12em * 2) !important;
+  }
+
+  #trendingView .archive-entry-meta {
+    color: var(--muted) !important;
+    text-align: right !important;
+    font-size: clamp(10px, 2.7vw, 12px) !important;
+    font-weight: 1000 !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    min-width: 0 !important;
+  }
+
+  @media (max-width: 520px) {
+    #trendingView .archive-summary {
+      grid-template-columns: 1fr 104px !important;
+      padding: 14px !important;
+    }
+
+    #trendingView .archive-entry-title {
+      font-size: clamp(13px, 4vw, 15px) !important;
+      line-height: 1.08 !important;
+      max-height: calc(1.08em * 2) !important;
     }
   }
 </style>
