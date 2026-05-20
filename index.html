@@ -6377,25 +6377,54 @@ ${siteUrl}`;
 
     async function loadTrendingPaths() {
       try {
-        console.log("CROWD FUNNING: requesting trending paths...");
+        console.log("CROWD FUNNING: requesting active trending foundations...");
 
         const { data, error } = await crowdFunningSupabase
-          .from("trending_paths")
-          .select("path_id,category_slug,category_name,entry_id,path_items,foundation_text,complete_votes,new_path_votes,completion_percent,step_count,trending_score")
-          .order("category_name", { ascending: true })
-          .order("trending_score", { ascending: false });
+          .from("active_entry_directions")
+          .select("entry_id,category_slug,category_label,node_id,node_key,direction_id,direction,direction_type,option_key,next_node_id,next_node_key,attribution_handle,score,selection_count,direction_status,direction_created_at,rank_within_node")
+          .eq("direction_type", "foundation")
+          .eq("node_key", "ROOT")
+          .eq("direction_status", "active")
+          .order("category_label", { ascending: true })
+          .order("score", { ascending: false })
+          .order("selection_count", { ascending: false })
+          .order("direction_created_at", { ascending: true });
 
         if (error) {
-          console.error("CROWD FUNNING: trending path load failed.", error);
+          console.error("CROWD FUNNING: active foundation trend load failed.", error);
           trendingPaths = [];
           return false;
         }
 
-        trendingPaths = Array.isArray(data) ? data : [];
-        console.log("CROWD FUNNING: trending paths loaded:", trendingPaths);
+        trendingPaths = (Array.isArray(data) ? data : []).map(row => ({
+          path_id: `foundation-${row.direction_id}`,
+          category_slug: row.category_slug,
+          category_name: row.category_label || row.category_slug,
+          entry_id: row.entry_id,
+          foundation_text: row.direction,
+          complete_votes: 0,
+          new_path_votes: 0,
+          completion_percent: 0,
+          step_count: 0,
+          trending_score: Number(row.score || 0),
+          path_items: [
+            {
+              index: 0,
+              text: row.direction,
+              originator: row.attribution_handle || "",
+              optionKey: row.option_key || row.direction,
+              directionId: row.direction_id,
+              parentNodeId: row.node_id,
+              nextNodeId: row.next_node_id || null,
+              nextNodeKey: row.next_node_key || row.option_key || ""
+            }
+          ]
+        }));
+
+        console.log("CROWD FUNNING: active trending foundations loaded:", trendingPaths);
         return true;
       } catch (err) {
-        console.error("CROWD FUNNING: unexpected trending path load error:", err);
+        console.error("CROWD FUNNING: unexpected active foundation trend load error:", err);
         trendingPaths = [];
         return false;
       }
@@ -6564,14 +6593,13 @@ ${siteUrl}`;
             </div>
             ${paths.map((path, idx) => {
               const foundationText = getTrendingPathFoundationText(path);
-              const stepCount = Number(path.step_count || 0);
-              const completePct = Math.round(Number(path.completion_percent || 0));
+              const score = Number(path.trending_score || 0);
 
               return `
                 <div class="archive-item trending-archive-item">
                   <button class="archive-summary trending-summary" data-trending-index="${idx}" data-trending-group="${categoryName}">
                     <span class="archive-entry-title">${foundationText}</span>
-                    <span class="archive-entry-meta">${stepCount} STEP${stepCount === 1 ? "" : "S"} • ${completePct}% COMPLETE</span>
+                    <span class="archive-entry-meta">ACTIVE • SCORE ${score}</span>
                   </button>
                 </div>
               `;
@@ -8052,6 +8080,13 @@ ${siteUrl}`;
       min-height: 68px !important;
       grid-template-columns: 1fr 96px !important;
     }
+  }
+</style>
+
+
+<style id="v1-8-33-trending-active-foundations-source">
+  #trendingView .archive-entry-meta {
+    min-width: 96px !important;
   }
 </style>
 
