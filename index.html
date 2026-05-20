@@ -6136,7 +6136,7 @@ ${siteUrl}`;
       try {
         const { data, error } = await crowdFunningSupabase
           .from("completed_paths")
-          .select("path_id,category_slug,category_name,path_items,complete_votes,new_direction_votes,status,completed_at,completed_name")
+          .select("path_id,category_slug,category_name,path_items,complete_votes,new_direction_votes,status,completed_at,completed_name,completed_summary")
           .order("completed_at", { ascending: false })
           .limit(100);
 
@@ -6175,6 +6175,8 @@ ${siteUrl}`;
             id: row.path_id,
             name: categoryName,
             completedName: row.completed_name || generateCompletedName(categoryName, progression),
+            completedSummary: row.completed_summary || "",
+            completed_summary: row.completed_summary || "",
             completedAt: row.completed_at ? new Date(row.completed_at).toLocaleString() : "",
             selections: totalVotes,
             completionShare,
@@ -6183,10 +6185,8 @@ ${siteUrl}`;
           };
         });
 
-        const remoteIds = new Set(remoteArchive.map(item => item.id).filter(Boolean));
-        const localOnly = (state.archive || []).filter(item => !item.id || !remoteIds.has(item.id));
-
-        state.archive = [...remoteArchive, ...localOnly];
+        // Remote completed paths are authoritative so new LLM summaries replace older cached card text.
+        state.archive = remoteArchive;
         saveState();
         return true;
       } catch (err) {
@@ -6225,6 +6225,7 @@ ${siteUrl}`;
       cat.completed = true;
       cat.completedAt = item.completedAt || "";
       cat.completedName = item.completedName || generateCompletedName(categoryName, progression);
+      cat.completedSummary = item.completedSummary || "";
       cat.phase = "completed_readonly";
       cat.foundationSubmitted = true;
       setFoundationGatePassed(cat, true);
@@ -6248,6 +6249,38 @@ ${siteUrl}`;
       saveState();
       showHome();
       renderProgressionPreview();
+    }
+
+    function getCompletedCardTitle(item) {
+      const summary = item && (
+        item.completedSummary ||
+        item.completed_summary ||
+        item.summary ||
+        ""
+      );
+
+      if (summary && String(summary).trim()) {
+        return String(summary).trim();
+      }
+
+      const foundationText =
+        item &&
+        item.progression &&
+        item.progression[0] &&
+        (
+          item.progression[0].text ||
+          item.progression[0].content ||
+          item.progression[0].direction ||
+          ""
+        );
+
+      if (foundationText && String(foundationText).trim()) {
+        return String(foundationText).trim();
+      }
+
+      return item && item.completedName
+        ? item.completedName
+        : generateCompletedName(item.name, item.progression);
     }
 
     function renderArchive() {
@@ -6326,7 +6359,7 @@ ${siteUrl}`;
               return `
                 <div class="archive-item">
                   <button class="archive-summary" data-completed-index="${idx}" data-completed-group="${groupName}">
-                    <span class="archive-entry-title">${(item.progression && item.progression[0] && item.progression[0].text) || item.completedName || generateCompletedName(item.name, item.progression)}</span>
+                    <span class="archive-entry-title">${getCompletedCardTitle(item)}</span>
                     <span class="archive-entry-meta">${completedDate} • ${foundationAuthor}</span>
                   </button>
                 </div>
