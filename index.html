@@ -5796,6 +5796,125 @@
       return true;
     }
 
+    async function promoteCompletedProgressionPath(cat, completePct) {
+      if (!cat || !cat.currentPathId) return false;
+
+      try {
+        const { error } = await crowdFunningSupabase.rpc("complete_progression_path", {
+          p_path_id: cat.currentPathId
+        });
+
+        if (error) {
+          console.error("CROWD FUNNING: completed path promotion failed:", error);
+          return false;
+        }
+
+        cat.pathStatus = "completed";
+        return true;
+      } catch (err) {
+        console.error("CROWD FUNNING: unexpected completed path promotion error:", err);
+        return false;
+      }
+    }
+
+    function archiveCompletedPathLocally(cat, completePct) {
+      if (!cat || !Array.isArray(cat.progression) || !cat.progression.length) return;
+
+      const completedName = generateCompletedName(cat.name, cat.progression);
+      const completedAt = new Date().toLocaleString();
+
+      cat.completed = true;
+      cat.completedAt = completedAt;
+      cat.completedName = completedName;
+      cat.frontierOpen = false;
+
+      const archiveItem = {
+        id: cat.currentPathId || `${cat.name}-${Date.now()}`,
+        name: cat.name,
+        completedName,
+        completedAt,
+        selections: cat.selections,
+        completionShare: completePct,
+        submissionCount: cat.submissionCount || 0,
+        progression: [...cat.progression]
+      };
+
+      const alreadyArchived = state.archive.some(item =>
+        (item.id && archiveItem.id && item.id === archiveItem.id) ||
+        (
+          item.name === archiveItem.name &&
+          JSON.stringify(item.progression || []) === JSON.stringify(archiveItem.progression || [])
+        )
+      );
+
+      if (!alreadyArchived) {
+        state.archive.unshift(archiveItem);
+      }
+    }
+
+    async function loadCompletedArchiveFromSupabase() {
+      try {
+        const { data, error } = await crowdFunningSupabase
+          .from("completed_paths")
+          .select("*")
+          .order("completed_at", { ascending: false })
+          .limit(100);
+
+        if (error) {
+          console.warn("CROWD FUNNING: completed paths view unavailable or failed.", error);
+          return false;
+        }
+
+        if (!Array.isArray(data)) return false;
+
+        const remoteArchive = data.map(row => {
+          let items = row.path_items || [];
+
+          if (typeof items === "string") {
+            try {
+              items = JSON.parse(items);
+            } catch (_) {
+              items = [];
+            }
+          }
+
+          const progression = Array.isArray(items)
+            ? items.map(item => ({
+                text: item && item.text ? item.text : String(item || ""),
+                originator: item && item.originator ? item.originator : ""
+              })).filter(item => item.text)
+            : [];
+
+          const completeVotes = Number(row.complete_votes || 0);
+          const newPathVotes = Number(row.new_direction_votes || 0);
+          const totalVotes = completeVotes + newPathVotes;
+          const completionShare = totalVotes ? Math.round((completeVotes / totalVotes) * 100) : 0;
+
+          return {
+            id: row.path_id,
+            name: String(row.category_name || row.category_slug || "CATEGORY").toUpperCase(),
+            completedName: row.completed_name || generateCompletedName(String(row.category_name || row.category_slug || "CATEGORY").toUpperCase(), progression),
+            completedAt: row.completed_at ? new Date(row.completed_at).toLocaleString() : "",
+            selections: totalVotes,
+            completionShare,
+            submissionCount: progression.length,
+            progression
+          };
+        });
+
+        const localOnly = state.archive.filter(local =>
+          !remoteArchive.some(remote => remote.id && local.id && remote.id === local.id)
+        );
+
+        state.archive = [...remoteArchive, ...localOnly];
+        saveState();
+        return true;
+      } catch (err) {
+        console.warn("CROWD FUNNING: unexpected completed archive load error:", err);
+        return false;
+      }
+    }
+
     async function completeCategory() {
       const cat = state.categories[state.activeCategory];
       if (!cat || cat.completed || cat.completeVoteSubmitted) return;
@@ -5836,22 +5955,8 @@
           return;
         }
 
-        const completedName = generateCompletedName(cat.name, cat.progression);
-
-        cat.completed = true;
-        cat.completedAt = new Date().toLocaleString();
-        cat.completedName = completedName;
-        cat.frontierOpen = false;
-
-        state.archive.unshift({
-          name: cat.name,
-          completedName,
-          completedAt: cat.completedAt,
-          selections: cat.selections,
-          completionShare: completePct,
-          submissionCount: cat.submissionCount || 0,
-          progression: [...cat.progression]
-        });
+        await promoteCompletedProgressionPath(cat, completePct);
+        archiveCompletedPathLocally(cat, completePct);
 
         saveState();
         renderAll();
@@ -6102,7 +6207,7 @@ ${siteUrl}`;
         searchInput.value = archiveSearch;
       }
 
-      const categories = ["ALL", ...Object.keys(SEEDS)];
+      const categories = ["ALL", ...(state.categoryOrder || Object.keys(state.categories || SEEDS))];
       filters.innerHTML = categories.map(name => `
         <button class="filter-chip ${archiveFilter === name ? "active" : ""}" data-filter="${name}" style="${name !== "ALL" ? `--accent:${COLORS[name][0]};--accent-soft:${COLORS[name][1]};` : ""}">
           ${name}
@@ -6410,11 +6515,12 @@ ${siteUrl}`;
       renderTrending();
     }
 
-    function showArchive() {
+    async function showArchive() {
       document.getElementById("homeView").classList.add("hidden");
       document.getElementById("trendingView").classList.add("hidden");
       document.getElementById("aboutView").classList.add("hidden");
       document.getElementById("archiveView").classList.remove("hidden");
+      await loadCompletedArchiveFromSupabase();
       renderArchive();
     }
 
