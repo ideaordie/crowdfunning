@@ -3987,33 +3987,53 @@ body.dark-mode select option{
 </style>
 
 
-<style id="v2-0-9-force-dark-dropdown-text">
-/* v2.0.9 — force dropdown text readable on desktop */
-
-select,
-.filter-dropdown{
-color:#111111!important;
--webkit-text-fill-color:#111111!important;
-background:#ffffff!important;
-}
-
-select option,
-.filter-dropdown option{
-color:#111111!important;
-background:#ffffff!important;
-}
+<style id="v2-1-0-dark-transparent-dropdowns">
+/* v2.1.0 — DARK mode dropdowns use a dark/transparent surface with readable light text */
 
 body.dark-mode select,
-body.dark-mode .filter-dropdown{
-color:#111111!important;
--webkit-text-fill-color:#111111!important;
-background:#ffffff!important;
+body.dark-mode .filter-dropdown,
+body:not(.light-mode) select,
+body:not(.light-mode) .filter-dropdown {
+  background: rgba(5, 7, 12, 0.96) !important;
+  color: #f4f7fb !important;
+  -webkit-text-fill-color: #f4f7fb !important;
+  border-color: rgba(255,255,255,0.18) !important;
 }
 
 body.dark-mode select option,
-body.dark-mode .filter-dropdown option{
-color:#111111!important;
-background:#ffffff!important;
+body.dark-mode .filter-dropdown option,
+body:not(.light-mode) select option,
+body:not(.light-mode) .filter-dropdown option {
+  background: #05070c !important;
+  color: #f4f7fb !important;
+  -webkit-text-fill-color: #f4f7fb !important;
+}
+
+body.dark-mode select:focus,
+body.dark-mode .filter-dropdown:focus,
+body:not(.light-mode) select:focus,
+body:not(.light-mode) .filter-dropdown:focus {
+  outline: none !important;
+  border-color: rgba(53,232,255,0.42) !important;
+  box-shadow:
+    0 0 0 1px rgba(53,232,255,0.18),
+    0 0 18px rgba(53,232,255,0.12) !important;
+}
+
+/* LIGHT mode remains conventional and readable */
+body.light-mode select,
+body.light-mode .filter-dropdown {
+  background: #ffffff !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  border-color: #cfd9de !important;
+}
+
+body.light-mode select option,
+body.light-mode .filter-dropdown option {
+  background: #ffffff !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
 }
 </style>
 
