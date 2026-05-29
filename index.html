@@ -4287,6 +4287,9 @@ label.archive-select-wrap:has(#archiveMaturitySelect) {
               <select id="archiveSortSelect" class="archive-select">
                 <option value="NEWEST">NEWEST</option>
                 <option value="HIGH_SCORE">HIGH SCORE</option>
+                <option value="MOST_STEPS">MOST STEPS</option>
+                <option value="LEAST_STEPS">LEAST STEPS</option>
+                <option value="OLDEST">OLDEST</option>
               </select>
             </label>
 
@@ -6755,6 +6758,12 @@ ${siteUrl}`;
       switch (mode) {
         case "HIGH_SCORE":
           return foundationScore;
+        case "MOST_STEPS":
+          return stepCount;
+        case "LEAST_STEPS":
+          return -stepCount;
+        case "OLDEST":
+          return -completedAt;
         case "MOST_COMPLETED":
           return completeVotes;
         case "MOST_CONTROVERSIAL":
@@ -6876,20 +6885,25 @@ ${siteUrl}`;
                 ? new Date(item.completedAt).toLocaleDateString()
                 : "";
 
-              const foundationAuthor =
+              const rawFoundationAuthor =
                 (
                   item.progression &&
                   item.progression[0] &&
                   item.progression[0].originator
                 )
-                  ? item.progression[0].originator
-                  : "anonymous";
+                  ? String(item.progression[0].originator).trim()
+                  : "";
+
+              const foundationAuthor =
+                rawFoundationAuthor
+                  ? rawFoundationAuthor.toUpperCase()
+                  : "ANONYMOUS";
 
               return `
                 <div class="archive-item">
                   <button class="archive-summary" data-completed-index="${idx}" data-completed-group="${groupName}">
                     <span class="archive-entry-title">${getCompletedCardTitle(item)}</span>
-                    <span class="archive-entry-meta">${completedDate} • ${foundationAuthor}</span>
+                    <span class="archive-entry-meta">${completedDate}${getCompletedFoundationScore(item) ? ` • SCORE ${getCompletedFoundationScore(item)}` : ""} • ${foundationAuthor}</span>
                   </button>
                 </div>
               `;
