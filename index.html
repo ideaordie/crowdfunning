@@ -4047,7 +4047,7 @@ body.light-mode .filter-dropdown option {
 
 @media (min-width: 920px) {
   #archiveView .archive-dropdown-row {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 }
 
@@ -4280,17 +4280,7 @@ body.light-mode .filter-dropdown option {
                 <option value="UNHINGED">UNHINGED</option>
               </select>
             </label>
-
-            <label class="archive-select-wrap">
-              <span>Maturity</span>
-              <select id="archiveMaturitySelect" class="archive-select">
-                <option value="ALL">ALL</option>
-                <option value="GENERAL">GENERAL</option>
-                <option value="MATURE">MATURE</option>
-                <option value="EXPLICIT">EXPLICIT</option>
-              </select>
-            </label>
-          </div>
+</div>
         </div>
         <div class="archive-list" id="archiveList"></div>
       </div>
@@ -4541,7 +4531,7 @@ body.light-mode .filter-dropdown option {
     let archiveSortMode = "NEWEST";
     let archiveVibeFilter = "ALL";
     let archiveIntensityFilter = "ALL";
-    let archiveMaturityFilter = "ALL";
+    
     let trendingPaths = [];
 
 
@@ -6661,7 +6651,7 @@ ${siteUrl}`;
       const sortSelect = document.getElementById("archiveSortSelect");
       const vibeSelect = document.getElementById("archiveVibeSelect");
       const intensitySelect = document.getElementById("archiveIntensitySelect");
-      const maturitySelect = document.getElementById("archiveMaturitySelect");
+      
 
       if (categorySelect) {
         const categories = ["ALL", ...(state.categoryOrder || Object.keys(state.categories || SEEDS))];
@@ -6791,12 +6781,7 @@ ${siteUrl}`;
             archiveIntensityFilter === "ALL" ||
             intensity === archiveIntensityFilter;
 
-          const maturity =
-            String(item.completedMaturity || item.completed_maturity || "").toUpperCase();
-
-          const matchesMaturity =
-            archiveMaturityFilter === "ALL" ||
-            maturity === archiveMaturityFilter;
+          
 
           const haystack = [
             item.name,
@@ -6805,14 +6790,13 @@ ${siteUrl}`;
             item.completedAt,
             vibe,
             intensity,
-            maturity,
-            itemTags.join(" "),
+                        itemTags.join(" "),
             ...(item.progression || []).map(entry => entry.text || entry)
           ].join(" ").toLowerCase();
 
           const matchesSearch = !search || haystack.includes(search);
 
-          return matchesCategory && matchesVibe && matchesIntensity && matchesMaturity && matchesSearch;
+          return matchesCategory && matchesVibe && matchesIntensity && matchesSearch;
         })
         .sort((a, b) => {
           const sortMode = archiveSortMode || "NEWEST";
