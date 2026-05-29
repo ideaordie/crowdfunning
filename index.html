@@ -4286,10 +4286,10 @@ label.archive-select-wrap:has(#archiveMaturitySelect) {
               <span>Sort</span>
               <select id="archiveSortSelect" class="archive-select">
                 <option value="NEWEST">NEWEST</option>
-                <option value="HIGH_SCORE">HIGH SCORE</option>
-                <option value="MOST_STEPS">MOST STEPS</option>
-                <option value="LEAST_STEPS">LEAST STEPS</option>
                 <option value="OLDEST">OLDEST</option>
+                <option value="MOST_VOTES">MOST VOTES</option>
+                <option value="LEAST_VOTES">LEAST VOTES</option>
+                <option value="HIGH_SCORE">HIGH SCORE</option>
               </select>
             </label>
 
@@ -6756,6 +6756,10 @@ ${siteUrl}`;
       const completedAt = item.completedAtRaw ? new Date(item.completedAtRaw).getTime() : (item.completedAt ? new Date(item.completedAt).getTime() : 0);
 
       switch (mode) {
+        case "MOST_VOTES":
+          return totalVotes;
+        case "LEAST_VOTES":
+          return -totalVotes;
         case "HIGH_SCORE":
           return foundationScore;
         case "MOST_STEPS":
