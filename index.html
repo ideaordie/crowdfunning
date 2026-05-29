@@ -4186,6 +4186,108 @@ body.light-mode #homeView .cf-collapsible::after {
 }
 </style>
 
+
+<style id="v2-2-5-develop-collapsed-alignment-cleanup">
+/* v2.2.5 — align SELECT A CATEGORY collapsed header and hide + indicators */
+
+/* Hide the generated + / – buttons on collapsed DEVELOP panels */
+#homeView .cf-collapsible::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Give all collapsed headers consistent horizontal spacing without the + indicator */
+#homeView .cf-collapsible .panel-title,
+#homeView #selectCategoryPanel .progress-headline {
+  padding-right: 0 !important;
+}
+
+/* Make SELECT A CATEGORY collapsed layout match the other collapsed panels */
+#homeView #selectCategoryPanel.cf-collapsed .progress-status {
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  align-items: center !important;
+  gap: 28px !important;
+  margin: 0 !important;
+}
+
+#homeView #selectCategoryPanel.cf-collapsed .progress-status > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 74px !important;
+}
+
+#homeView #selectCategoryPanel.cf-collapsed .progress-headline {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 74px !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+/* Keep expanded panel layout normal */
+#homeView #selectCategoryPanel:not(.cf-collapsed) .progress-status > div:last-child {
+  display: block !important;
+  min-height: 0 !important;
+}
+
+#homeView #selectCategoryPanel:not(.cf-collapsed) .progress-headline {
+  display: block !important;
+  min-height: 0 !important;
+  line-height: inherit !important;
+}
+</style>
+
+
+<style id="v2-2-6-select-category-height-match">
+/* v2.2.6 — make SELECT A CATEGORY collapsed panel match other collapsed panel heights */
+
+#homeView #selectCategoryPanel.cf-collapsed {
+  height: auto !important;
+  min-height: 0 !important;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+}
+
+#homeView #selectCategoryPanel.cf-collapsed .progress-status {
+  display: flex !important;
+  align-items: center !important;
+  gap: 28px !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+#homeView #selectCategoryPanel.cf-collapsed .progress-status > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+#homeView #selectCategoryPanel.cf-collapsed .progress-headline {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+/* Match the icon height used by the other collapsed panels */
+#homeView #selectCategoryPanel.cf-collapsed .flag {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+
+/* Ensure all collapsed DEVELOP panels share the same compact vertical rhythm */
+#homeView .cf-collapsible.cf-collapsed {
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
