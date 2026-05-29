@@ -4060,6 +4060,40 @@ body.light-mode .filter-dropdown option {
 }
 </style>
 
+
+<style id="v2-2-2-completed-fix-score-collapse">
+/* v2.2.2 — restore completed paths, hide maturity filter safely, show foundation score */
+
+#archiveMaturitySelect,
+#archiveMaturitySelect.closest,
+label.archive-select-wrap:has(#archiveMaturitySelect) {
+  display: none !important;
+}
+
+@media (min-width: 920px) {
+  #archiveView .archive-dropdown-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+/* DEVELOP page collapsed-panel direction */
+#developView .panel,
+#homeView .panel {
+  transition: max-height .28s ease, padding .28s ease, opacity .22s ease;
+}
+
+#developView .panel-title,
+#homeView .panel-title {
+  cursor: pointer;
+}
+
+/* Rename/clarify the category panel visually */
+#categoryPanelTitle::after,
+[data-panel-title="SELECT A CATEGORY"]::after {
+  content: "";
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -4095,7 +4129,7 @@ body.light-mode .filter-dropdown option {
           <div class="progress-status">
             <div class="flag">⚑</div>
             <div>
-              <div class="progress-headline" id="progressHeadline">CATEGORY WAITING</div>
+              <div class="progress-headline" id="progressHeadline">SELECT A CATEGORY</div>
               <div class="progress-sub" id="progressSub">Select a category above to begin.</div>
             </div>
           </div>
@@ -4280,7 +4314,7 @@ body.light-mode .filter-dropdown option {
                 <option value="UNHINGED">UNHINGED</option>
               </select>
             </label>
-</div>
+          </div>
         </div>
         <div class="archive-list" id="archiveList"></div>
       </div>
@@ -4531,7 +4565,7 @@ body.light-mode .filter-dropdown option {
     let archiveSortMode = "NEWEST";
     let archiveVibeFilter = "ALL";
     let archiveIntensityFilter = "ALL";
-    
+    let archiveMaturityFilter = "ALL";
     let trendingPaths = [];
 
 
@@ -6441,7 +6475,7 @@ ${siteUrl}`;
       const completeMeter = document.getElementById("completeVoteMeter");
 
       if (!name) {
-        headline.textContent = "CATEGORY WAITING";
+        headline.textContent = "SELECT A CATEGORY";
         sub.textContent = "Select a category above to begin.";
         label.textContent = "0% COMPLETE";
         bar.style.width = "0%";
@@ -6614,6 +6648,15 @@ ${siteUrl}`;
       renderProgressionPreview();
     }
 
+
+    function getCompletedFoundationScore(item) {
+      return Number(
+        item?.foundationScore ??
+        item?.foundation_score ??
+        0
+      );
+    }
+
     function getCompletedCardTitle(item) {
       const summary = item && (
         item.completedSummary ||
@@ -6651,7 +6694,7 @@ ${siteUrl}`;
       const sortSelect = document.getElementById("archiveSortSelect");
       const vibeSelect = document.getElementById("archiveVibeSelect");
       const intensitySelect = document.getElementById("archiveIntensitySelect");
-      
+      const maturitySelect = document.getElementById("archiveMaturitySelect");
 
       if (categorySelect) {
         const categories = ["ALL", ...(state.categoryOrder || Object.keys(state.categories || SEEDS))];
@@ -6781,7 +6824,12 @@ ${siteUrl}`;
             archiveIntensityFilter === "ALL" ||
             intensity === archiveIntensityFilter;
 
-          
+          const maturity =
+            String(item.completedMaturity || item.completed_maturity || "").toUpperCase();
+
+          const matchesMaturity =
+            archiveMaturityFilter === "ALL" ||
+            maturity === archiveMaturityFilter;
 
           const haystack = [
             item.name,
@@ -6790,13 +6838,14 @@ ${siteUrl}`;
             item.completedAt,
             vibe,
             intensity,
-                        itemTags.join(" "),
+            maturity,
+            itemTags.join(" "),
             ...(item.progression || []).map(entry => entry.text || entry)
           ].join(" ").toLowerCase();
 
           const matchesSearch = !search || haystack.includes(search);
 
-          return matchesCategory && matchesVibe && matchesIntensity && matchesSearch;
+          return matchesCategory && matchesVibe && matchesIntensity && matchesMaturity && matchesSearch;
         })
         .sort((a, b) => {
           const sortMode = archiveSortMode || "NEWEST";
@@ -7854,7 +7903,7 @@ ${siteUrl}`;
 
 
 <style id="v1-7-41-category-progress-card-borderless-fix">
-  /* Direct fix for the top CATEGORY WAITING / COMPLETION PROGRESS panel */
+  /* Direct fix for the top SELECT A CATEGORY / COMPLETION PROGRESS panel */
   body:not(.light-mode) .category-progress-card {
     background: #080808 !important;
     background-image: none !important;
