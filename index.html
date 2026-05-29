@@ -4037,6 +4037,29 @@ body.light-mode .filter-dropdown option {
 }
 </style>
 
+
+<style id="v2-2-0-completed-metadata-filters">
+/* v2.2.0 — COMPLETED metadata filters connected to Supabase fields */
+
+#archiveView .archive-dropdown-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+@media (min-width: 920px) {
+  #archiveView .archive-dropdown-row {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+}
+
+#archiveView .archive-select-wrap span {
+  opacity: 0.78 !important;
+}
+
+#archiveView .archive-select {
+  min-width: 0 !important;
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -4230,14 +4253,6 @@ body.light-mode .filter-dropdown option {
               <select id="archiveSortSelect" class="archive-select">
                 <option value="NEWEST">NEWEST</option>
                 <option value="HIGH_SCORE">HIGH SCORE</option>
-                <option value="MOST_COMPLETED">MOST COMPLETED</option>
-                <option value="MOST_CONTROVERSIAL">MOST CONTROVERSIAL</option>
-                <option value="LONGEST">LONGEST</option>
-                <option value="SHORTEST">SHORTEST</option>
-                <option value="FASTEST_COMPLETE">FASTEST COMPLETE</option>
-                <option value="MOST_REMIXED">MOST REMIXED</option>
-                <option value="MOST_VIEWED">MOST VIEWED</option>
-                <option value="TRENDING_COMPLETE">TRENDING COMPLETE</option>
               </select>
             </label>
 
@@ -4263,6 +4278,16 @@ body.light-mode .filter-dropdown option {
                 <option value="MILD">MILD</option>
                 <option value="WILD">WILD</option>
                 <option value="UNHINGED">UNHINGED</option>
+              </select>
+            </label>
+
+            <label class="archive-select-wrap">
+              <span>Maturity</span>
+              <select id="archiveMaturitySelect" class="archive-select">
+                <option value="ALL">ALL</option>
+                <option value="GENERAL">GENERAL</option>
+                <option value="MATURE">MATURE</option>
+                <option value="EXPLICIT">EXPLICIT</option>
               </select>
             </label>
           </div>
@@ -4516,6 +4541,7 @@ body.light-mode .filter-dropdown option {
     let archiveSortMode = "NEWEST";
     let archiveVibeFilter = "ALL";
     let archiveIntensityFilter = "ALL";
+    let archiveMaturityFilter = "ALL";
     let trendingPaths = [];
 
 
@@ -6470,7 +6496,7 @@ ${siteUrl}`;
       try {
         const { data, error } = await crowdFunningSupabase
           .from("completed_paths")
-          .select("path_id,category_slug,category_name,path_items,complete_votes,new_direction_votes,status,completed_at,completed_name,completed_summary")
+          .select("path_id,category_slug,category_name,path_items,complete_votes,new_direction_votes,status,completed_at,completed_name,completed_summary,completed_tags,completed_maturity,completed_vibe,completed_intensity,completed_risk_score,foundation_score")
           .order("completed_at", { ascending: false })
           .limit(100);
 
@@ -6512,9 +6538,22 @@ ${siteUrl}`;
             completedSummary: row.completed_summary || "",
             completed_summary: row.completed_summary || "",
             completedAt: row.completed_at ? new Date(row.completed_at).toLocaleString() : "",
+            completedAtRaw: row.completed_at || "",
             selections: totalVotes,
             completionShare,
             submissionCount: progression.length,
+            completedTags: Array.isArray(row.completed_tags) ? row.completed_tags : [],
+            completed_tags: Array.isArray(row.completed_tags) ? row.completed_tags : [],
+            completedMaturity: row.completed_maturity || "general",
+            completed_maturity: row.completed_maturity || "general",
+            completedVibe: row.completed_vibe || "uncategorized",
+            completed_vibe: row.completed_vibe || "uncategorized",
+            completedIntensity: row.completed_intensity || "mild",
+            completed_intensity: row.completed_intensity || "mild",
+            completedRiskScore: Number(row.completed_risk_score || 0),
+            completed_risk_score: Number(row.completed_risk_score || 0),
+            foundationScore: Number(row.foundation_score || 0),
+            foundation_score: Number(row.foundation_score || 0),
             progression
           };
         });
@@ -6622,6 +6661,7 @@ ${siteUrl}`;
       const sortSelect = document.getElementById("archiveSortSelect");
       const vibeSelect = document.getElementById("archiveVibeSelect");
       const intensitySelect = document.getElementById("archiveIntensitySelect");
+      const maturitySelect = document.getElementById("archiveMaturitySelect");
 
       if (categorySelect) {
         const categories = ["ALL", ...(state.categoryOrder || Object.keys(state.categories || SEEDS))];
@@ -6660,6 +6700,14 @@ ${siteUrl}`;
           renderArchive();
         };
       }
+
+      if (maturitySelect) {
+        maturitySelect.value = archiveMaturityFilter || "ALL";
+        maturitySelect.onchange = () => {
+          archiveMaturityFilter = maturitySelect.value || "ALL";
+          renderArchive();
+        };
+      }
     }
 
     function getArchiveSortValue(item, mode) {
@@ -6669,7 +6717,7 @@ ${siteUrl}`;
       const completionShare = Number(item.completionShare || 0);
       const stepCount = Array.isArray(item.progression) ? item.progression.length : Number(item.submissionCount || 0);
       const foundationScore = Number(item.foundationScore || item.foundation_score || 0);
-      const completedAt = item.completedAt ? new Date(item.completedAt).getTime() : 0;
+      const completedAt = item.completedAtRaw ? new Date(item.completedAtRaw).getTime() : (item.completedAt ? new Date(item.completedAt).getTime() : 0);
 
       switch (mode) {
         case "HIGH_SCORE":
@@ -6728,8 +6776,12 @@ ${siteUrl}`;
             ...(Array.isArray(item.completed_tags) ? item.completed_tags : [])
           ].map(tag => String(tag).toUpperCase());
 
+          const vibe =
+            String(item.completedVibe || item.completed_vibe || "").toUpperCase();
+
           const matchesVibe =
             archiveVibeFilter === "ALL" ||
+            vibe === archiveVibeFilter ||
             itemTags.includes(archiveVibeFilter);
 
           const intensity =
@@ -6739,17 +6791,28 @@ ${siteUrl}`;
             archiveIntensityFilter === "ALL" ||
             intensity === archiveIntensityFilter;
 
+          const maturity =
+            String(item.completedMaturity || item.completed_maturity || "").toUpperCase();
+
+          const matchesMaturity =
+            archiveMaturityFilter === "ALL" ||
+            maturity === archiveMaturityFilter;
+
           const haystack = [
             item.name,
             item.completedName,
             item.completedSummary,
             item.completedAt,
+            vibe,
+            intensity,
+            maturity,
+            itemTags.join(" "),
             ...(item.progression || []).map(entry => entry.text || entry)
           ].join(" ").toLowerCase();
 
           const matchesSearch = !search || haystack.includes(search);
 
-          return matchesCategory && matchesVibe && matchesIntensity && matchesSearch;
+          return matchesCategory && matchesVibe && matchesIntensity && matchesMaturity && matchesSearch;
         })
         .sort((a, b) => {
           const sortMode = archiveSortMode || "NEWEST";
