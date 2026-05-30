@@ -6792,7 +6792,18 @@ ${siteUrl}`;
 
     function isExplicitCompletedPath(item) {
       const maturity = String(item?.completedMaturity || item?.completed_maturity || "").toLowerCase();
-      return maturity === "explicit";
+      const vibe = String(item?.completedVibe || item?.completed_vibe || "").toLowerCase();
+
+      const tags = [
+        ...(Array.isArray(item?.completedTags) ? item.completedTags : []),
+        ...(Array.isArray(item?.completed_tags) ? item.completed_tags : [])
+      ].map(tag => String(tag).toUpperCase());
+
+      return (
+        maturity === "explicit" ||
+        vibe === "explicit" ||
+        tags.includes("EXPLICIT")
+      );
     }
 
     function requestAdultContentApproval(callback) {
@@ -6802,7 +6813,7 @@ ${siteUrl}`;
       const cancelBtn = document.getElementById("adultGateCancelBtn");
 
       if (!modal || !check || !continueBtn || !cancelBtn) {
-        const ok = window.confirm("This path may contain explicit content. Confirm you are 18 or older to view it.");
+        const ok = window.confirm("This path may contain explicit or mature content. Confirm you are 18 or older to view it.");
         if (ok) {
           setAdultContentApproval(true);
           if (callback) callback();
@@ -7083,8 +7094,8 @@ ${siteUrl}`;
               return `
                 <div class="archive-item">
                   <button class="archive-summary" data-completed-index="${idx}" data-completed-group="${groupName}">
-                    <span class="archive-entry-title">${getCompletedCardTitle(item)}</span>
-                    <span class="archive-entry-meta">${completedDate}${getCompletedFoundationScore(item) ? ` • SCORE ${getCompletedFoundationScore(item)}` : ""} • ${foundationAuthor}${isExplicitCompletedPath(item) ? ` <span class="adult-badge">18+</span>` : ""}</span>
+                    <span class="archive-entry-title ${isExplicitCompletedPath(item) && !hasAdultContentApproval() ? "adult-gated-title" : ""}">${isExplicitCompletedPath(item) && !hasAdultContentApproval() ? "Content locked" : getCompletedCardTitle(item)}</span>
+                    <span class="archive-entry-meta ${isExplicitCompletedPath(item) && !hasAdultContentApproval() ? "adult-gated-meta" : ""}">${completedDate}${getCompletedFoundationScore(item) ? ` • SCORE ${getCompletedFoundationScore(item)}` : ""} • ${foundationAuthor}${isExplicitCompletedPath(item) && !hasAdultContentApproval() ? " • CONFIRM 18+" : ""}</span>
                   </button>
                 </div>
               `;
