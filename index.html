@@ -4094,6 +4094,116 @@ label.archive-select-wrap:has(#archiveMaturitySelect) {
 }
 </style>
 
+
+<style id="v2-2-5-adult-content-gate">
+/* v2.2.5 — 18+ gate for completed paths where completed_maturity = explicit */
+
+.adult-gate-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(18px);
+}
+
+.adult-gate-modal.hidden {
+  display: none !important;
+}
+
+.adult-gate-card {
+  width: min(440px, 100%);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-top-color: rgba(255,255,255,0.28);
+  border-radius: 22px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at top left, rgba(255,61,242,0.16), transparent 42%),
+    radial-gradient(circle at top right, rgba(52,233,255,0.12), transparent 38%),
+    linear-gradient(180deg, rgba(18,18,26,0.98), rgba(4,5,8,0.98));
+  color: var(--text);
+  box-shadow: 0 28px 90px rgba(0,0,0,0.62);
+}
+
+body.light-mode .adult-gate-card {
+  background:
+    radial-gradient(circle at top left, rgba(255,61,242,0.14), transparent 42%),
+    radial-gradient(circle at top right, rgba(52,160,255,0.15), transparent 38%),
+    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,248,250,0.98));
+  color: #0f1419;
+  border-color: rgba(0,0,0,0.14);
+}
+
+.adult-gate-kicker,
+.adult-badge {
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid rgba(255,107,122,0.38);
+  background: rgba(255,107,122,0.12);
+  color: #ff6b7a;
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.adult-gate-card h2 {
+  margin: 14px 0 8px;
+  font-size: 24px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.adult-gate-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+.adult-gate-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+  color: var(--text);
+  font-weight: 850;
+  line-height: 1.3;
+}
+
+.adult-gate-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.adult-gate-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.adult-gate-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.archive-entry-meta .adult-badge {
+  margin-left: 6px;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 520px) {
+  .adult-gate-actions {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -6598,6 +6708,11 @@ ${siteUrl}`;
     function openCompletedPath(item) {
       if (!item) return;
 
+      if (isExplicitCompletedPath(item) && !hasAdultContentApproval()) {
+        requestAdultContentApproval(() => openCompletedPath(item));
+        return;
+      }
+
       const categoryName = String(item.name || "JOKE").trim().toUpperCase();
 
       if (!state.categories[categoryName]) {
@@ -6658,6 +6773,68 @@ ${siteUrl}`;
         item?.foundation_score ??
         0
       );
+    }
+
+
+    const ADULT_GATE_STORAGE_KEY = "crowdfunning_adult_content_confirmed_v1";
+
+    function hasAdultContentApproval() {
+      return localStorage.getItem(ADULT_GATE_STORAGE_KEY) === "true";
+    }
+
+    function setAdultContentApproval(value) {
+      if (value) {
+        localStorage.setItem(ADULT_GATE_STORAGE_KEY, "true");
+      } else {
+        localStorage.removeItem(ADULT_GATE_STORAGE_KEY);
+      }
+    }
+
+    function isExplicitCompletedPath(item) {
+      const maturity = String(item?.completedMaturity || item?.completed_maturity || "").toLowerCase();
+      return maturity === "explicit";
+    }
+
+    function requestAdultContentApproval(callback) {
+      const modal = document.getElementById("adultGateModal");
+      const check = document.getElementById("adultGateConfirmCheck");
+      const continueBtn = document.getElementById("adultGateContinueBtn");
+      const cancelBtn = document.getElementById("adultGateCancelBtn");
+
+      if (!modal || !check || !continueBtn || !cancelBtn) {
+        const ok = window.confirm("This path may contain explicit content. Confirm you are 18 or older to view it.");
+        if (ok) {
+          setAdultContentApproval(true);
+          if (callback) callback();
+        }
+        return;
+      }
+
+      check.checked = false;
+      continueBtn.disabled = true;
+      modal.classList.remove("hidden");
+
+      const cleanup = () => {
+        modal.classList.add("hidden");
+        check.onchange = null;
+        continueBtn.onclick = null;
+        cancelBtn.onclick = null;
+      };
+
+      check.onchange = () => {
+        continueBtn.disabled = !check.checked;
+      };
+
+      cancelBtn.onclick = () => {
+        cleanup();
+      };
+
+      continueBtn.onclick = () => {
+        if (!check.checked) return;
+        setAdultContentApproval(true);
+        cleanup();
+        if (callback) callback();
+      };
     }
 
     function getCompletedCardTitle(item) {
@@ -6907,7 +7084,7 @@ ${siteUrl}`;
                 <div class="archive-item">
                   <button class="archive-summary" data-completed-index="${idx}" data-completed-group="${groupName}">
                     <span class="archive-entry-title">${getCompletedCardTitle(item)}</span>
-                    <span class="archive-entry-meta">${completedDate}${getCompletedFoundationScore(item) ? ` • SCORE ${getCompletedFoundationScore(item)}` : ""} • ${foundationAuthor}</span>
+                    <span class="archive-entry-meta">${completedDate}${getCompletedFoundationScore(item) ? ` • SCORE ${getCompletedFoundationScore(item)}` : ""} • ${foundationAuthor}${isExplicitCompletedPath(item) ? ` <span class="adult-badge">18+</span>` : ""}</span>
                   </button>
                 </div>
               `;
@@ -9215,6 +9392,25 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     }
   }
 </style>
+
+
+<div class="adult-gate-modal hidden" id="adultGateModal" role="dialog" aria-modal="true" aria-labelledby="adultGateTitle">
+  <div class="adult-gate-card">
+    <div class="adult-gate-kicker">18+ CONTENT</div>
+    <h2 id="adultGateTitle">Explicit path</h2>
+    <p>This completed path may contain explicit content. Confirm that you are 18 or older to view it.</p>
+
+    <label class="adult-gate-check">
+      <input type="checkbox" id="adultGateConfirmCheck" />
+      <span>I confirm I am 18 or older.</span>
+    </label>
+
+    <div class="adult-gate-actions">
+      <button class="nav-btn" id="adultGateCancelBtn" type="button">CANCEL</button>
+      <button class="primary" id="adultGateContinueBtn" type="button" disabled>VIEW PATH</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
