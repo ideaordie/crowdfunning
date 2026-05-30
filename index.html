@@ -4204,6 +4204,17 @@ body.light-mode .adult-gate-card {
 }
 </style>
 
+
+<style id="v2-2-7-adult-gate-trending-develop">
+/* v2.2.7 — 18+ gate extended to TRENDING and DEVELOP path selection */
+.option-copy.adult-gated-title {
+  color: var(--muted) !important;
+}
+.vote-row .adult-gated-meta {
+  color: #ff6b7a !important;
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -5154,7 +5165,17 @@ body.light-mode .adult-gate-card {
             directionType: row.direction_type,
             nextNodeId: row.next_node_id || null,
             nextNodeKey: row.next_node_key || null,
-            attributionHandle: row.attribution_handle || ""
+            attributionHandle: row.attribution_handle || "",
+            llmTags: Array.isArray(row.llm_tags) ? row.llm_tags : [],
+            llm_tags: Array.isArray(row.llm_tags) ? row.llm_tags : [],
+            llmMaturity: row.llm_maturity || "general",
+            llm_maturity: row.llm_maturity || "general",
+            llmVibe: row.llm_vibe || "uncategorized",
+            llm_vibe: row.llm_vibe || "uncategorized",
+            llmIntensity: row.llm_intensity || "mild",
+            llm_intensity: row.llm_intensity || "mild",
+            llmRiskScore: Number(row.llm_risk_score || 0),
+            llm_risk_score: Number(row.llm_risk_score || 0)
           }))
         };
 
@@ -5182,7 +5203,17 @@ body.light-mode .adult-gate-card {
           directionType: direction.directionType,
           nextNodeId: direction.nextNodeId,
           nextNodeKey: direction.nextNodeKey,
-          attributionHandle: direction.attributionHandle || ""
+          attributionHandle: direction.attributionHandle || "",
+          llmTags: Array.isArray(direction.llmTags) ? direction.llmTags : [],
+          llm_tags: Array.isArray(direction.llm_tags) ? direction.llm_tags : [],
+          llmMaturity: direction.llmMaturity || direction.llm_maturity || "general",
+          llm_maturity: direction.llm_maturity || direction.llmMaturity || "general",
+          llmVibe: direction.llmVibe || direction.llm_vibe || "uncategorized",
+          llm_vibe: direction.llm_vibe || direction.llmVibe || "uncategorized",
+          llmIntensity: direction.llmIntensity || direction.llm_intensity || "mild",
+          llm_intensity: direction.llm_intensity || direction.llmIntensity || "mild",
+          llmRiskScore: Number(direction.llmRiskScore || direction.llm_risk_score || 0),
+          llm_risk_score: Number(direction.llm_risk_score || direction.llmRiskScore || 0)
         }));
 
         cat.phase = hasFirstFoundationCommitted(cat) ? "direction_select" : "foundation_select";
@@ -5372,12 +5403,12 @@ body.light-mode .adult-gate-card {
           const card = document.createElement("div");
           card.className = "option-card" + (collapsing ? " destabilizing" : "") + (isPreselected ? " preselected" : "");
           card.innerHTML = `
-            <div class="option-copy">${opt.text}</div>
+            <div class="option-copy ${isExplicitCompletedPath(opt) && !hasAdultContentApproval() ? "adult-gated-title" : ""}">${isExplicitCompletedPath(opt) && !hasAdultContentApproval() ? "Content locked" : opt.text}</div>
             ${attributionHtml(opt.originator)}
             <div class="vote-row">
               <span class="up">▲ ${shownUp}</span>
               <span class="down">▼ ${shownDown}</span>
-              <span>score ${score}</span>
+              <span>score ${score}</span>${isExplicitCompletedPath(opt) && !hasAdultContentApproval() ? `<span class="adult-gated-meta">CONFIRM 18+</span>` : ""}
             </div>
             ${opt.isNew ? `<span class="new-pill">NEW</span>` : ""}
             
@@ -5485,6 +5516,11 @@ body.light-mode .adult-gate-card {
 
       const selected = cat.options[index];
       if (!selected) return;
+
+      if (isExplicitCompletedPath(selected) && !hasAdultContentApproval()) {
+        requestAdultContentApproval(() => chooseOption(index));
+        return;
+      }
 
       if (cat.liveEntry && selected.liveDirectionId) {
         cat.preselectedOptionIndex = index;
@@ -5705,6 +5741,11 @@ body.light-mode .adult-gate-card {
 
       if (!selected) {
         alert("Please select a direction before committing.");
+        return;
+      }
+
+      if (isExplicitCompletedPath(selected) && !hasAdultContentApproval()) {
+        requestAdultContentApproval(() => commitPreselectedOption(options));
         return;
       }
 
@@ -6791,12 +6832,27 @@ ${siteUrl}`;
     }
 
     function isExplicitCompletedPath(item) {
-      const maturity = String(item?.completedMaturity || item?.completed_maturity || "").toLowerCase();
-      const vibe = String(item?.completedVibe || item?.completed_vibe || "").toLowerCase();
+      const maturity = String(
+        item?.completedMaturity ||
+        item?.completed_maturity ||
+        item?.llmMaturity ||
+        item?.llm_maturity ||
+        ""
+      ).toLowerCase();
+
+      const vibe = String(
+        item?.completedVibe ||
+        item?.completed_vibe ||
+        item?.llmVibe ||
+        item?.llm_vibe ||
+        ""
+      ).toLowerCase();
 
       const tags = [
         ...(Array.isArray(item?.completedTags) ? item.completedTags : []),
-        ...(Array.isArray(item?.completed_tags) ? item.completed_tags : [])
+        ...(Array.isArray(item?.completed_tags) ? item.completed_tags : []),
+        ...(Array.isArray(item?.llmTags) ? item.llmTags : []),
+        ...(Array.isArray(item?.llm_tags) ? item.llm_tags : [])
       ].map(tag => String(tag).toUpperCase());
 
       return (
@@ -7131,7 +7187,7 @@ ${siteUrl}`;
 
         const { data, error } = await crowdFunningSupabase
           .from("active_entry_directions")
-          .select("entry_id,category_slug,category_label,node_id,node_key,direction_id,direction,direction_type,option_key,next_node_id,next_node_key,attribution_handle,score,selection_count,direction_status,direction_created_at,rank_within_node")
+          .select("*")
           .eq("direction_type", "foundation")
           .eq("node_key", "ROOT")
           .eq("direction_status", "active")
@@ -7158,6 +7214,16 @@ ${siteUrl}`;
           completion_percent: 0,
           step_count: 0,
           trending_score: Number(row.score || 0),
+          llmTags: Array.isArray(row.llm_tags) ? row.llm_tags : [],
+          llm_tags: Array.isArray(row.llm_tags) ? row.llm_tags : [],
+          llmMaturity: row.llm_maturity || "general",
+          llm_maturity: row.llm_maturity || "general",
+          llmVibe: row.llm_vibe || "uncategorized",
+          llm_vibe: row.llm_vibe || "uncategorized",
+          llmIntensity: row.llm_intensity || "mild",
+          llm_intensity: row.llm_intensity || "mild",
+          llmRiskScore: Number(row.llm_risk_score || 0),
+          llm_risk_score: Number(row.llm_risk_score || 0),
           path_items: [
             {
               index: 0,
@@ -7167,7 +7233,17 @@ ${siteUrl}`;
               directionId: row.direction_id,
               parentNodeId: row.node_id,
               nextNodeId: row.next_node_id || null,
-              nextNodeKey: row.next_node_key || row.option_key || ""
+              nextNodeKey: row.next_node_key || row.option_key || "",
+              llmTags: Array.isArray(row.llm_tags) ? row.llm_tags : [],
+              llm_tags: Array.isArray(row.llm_tags) ? row.llm_tags : [],
+              llmMaturity: row.llm_maturity || "general",
+              llm_maturity: row.llm_maturity || "general",
+              llmVibe: row.llm_vibe || "uncategorized",
+              llm_vibe: row.llm_vibe || "uncategorized",
+              llmIntensity: row.llm_intensity || "mild",
+              llm_intensity: row.llm_intensity || "mild",
+              llmRiskScore: Number(row.llm_risk_score || 0),
+              llm_risk_score: Number(row.llm_risk_score || 0)
             }
           ]
         }));
@@ -7230,7 +7306,17 @@ ${siteUrl}`;
         directionId: item && item.directionId ? item.directionId : null,
         parentNodeId: item && item.parentNodeId ? item.parentNodeId : null,
         nextNodeId: item && item.nextNodeId ? item.nextNodeId : null,
-        nextNodeKey: item && item.nextNodeKey ? item.nextNodeKey : ""
+        nextNodeKey: item && item.nextNodeKey ? item.nextNodeKey : "",
+        llmTags: Array.isArray(item && item.llmTags) ? item.llmTags : (Array.isArray(item && item.llm_tags) ? item.llm_tags : []),
+        llm_tags: Array.isArray(item && item.llm_tags) ? item.llm_tags : (Array.isArray(item && item.llmTags) ? item.llmTags : []),
+        llmMaturity: item && (item.llmMaturity || item.llm_maturity) ? (item.llmMaturity || item.llm_maturity) : "general",
+        llm_maturity: item && (item.llm_maturity || item.llmMaturity) ? (item.llm_maturity || item.llmMaturity) : "general",
+        llmVibe: item && (item.llmVibe || item.llm_vibe) ? (item.llmVibe || item.llm_vibe) : "uncategorized",
+        llm_vibe: item && (item.llm_vibe || item.llmVibe) ? (item.llm_vibe || item.llmVibe) : "uncategorized",
+        llmIntensity: item && (item.llmIntensity || item.llm_intensity) ? (item.llmIntensity || item.llm_intensity) : "mild",
+        llm_intensity: item && (item.llm_intensity || item.llmIntensity) ? (item.llm_intensity || item.llmIntensity) : "mild",
+        llmRiskScore: Number(item && (item.llmRiskScore || item.llm_risk_score) || 0),
+        llm_risk_score: Number(item && (item.llm_risk_score || item.llmRiskScore) || 0)
       })).filter(item => item.text);
     }
 
@@ -7329,6 +7415,11 @@ ${siteUrl}`;
       if (!path) return;
 
       path = await resolveDeepestActivePathForFoundation(path);
+
+      if (isExplicitCompletedPath(path) && !hasAdultContentApproval()) {
+        requestAdultContentApproval(() => continueTrendingPath(path));
+        return;
+      }
 
       const categoryName = String(path.category_name || path.category_slug || "JOKE").trim().toUpperCase();
 
@@ -7442,8 +7533,8 @@ ${siteUrl}`;
               return `
                 <div class="archive-item trending-archive-item">
                   <button class="archive-summary trending-summary" data-trending-index="${idx}" data-trending-group="${categoryName}">
-                    <span class="archive-entry-title">${foundationText}</span>
-                    <span class="archive-entry-meta">OPEN LATEST • SCORE ${score}</span>
+                    <span class="archive-entry-title ${isExplicitCompletedPath(path) && !hasAdultContentApproval() ? "adult-gated-title" : ""}">${isExplicitCompletedPath(path) && !hasAdultContentApproval() ? "Content locked" : foundationText}</span>
+                    <span class="archive-entry-meta ${isExplicitCompletedPath(path) && !hasAdultContentApproval() ? "adult-gated-meta" : ""}">OPEN LATEST • SCORE ${score}${isExplicitCompletedPath(path) && !hasAdultContentApproval() ? " • CONFIRM 18+" : ""}</span>
                   </button>
                 </div>
               `;
