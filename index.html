@@ -10273,47 +10273,83 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
 </script>
 
 
-<script id="v2-3-2-dashboard-filter-script">
+
+
+
+<script id="v2-3-3-dashboard-filter-dom-script">
 (function(){
-  function getDashboardContributions(){
-    return Array.isArray(window.__crowdfunningDashboardContributions)
-      ? window.__crowdfunningDashboardContributions
-      : [];
-  }
+  function applyDashboardCardFilter(filterMode){
+    const list = document.getElementById("contributorDashboardList");
+    if(!list) return;
 
-  function applyDashboardFilter(){
-    const currentFilter = window.__crowdfunningDashboardFilter || "all";
-    const rows = currentFilter === "completed"
-      ? getDashboardContributions().filter(row => !!row.included_in_completed_path)
-      : getDashboardContributions();
+    const cards = Array.from(list.querySelectorAll(".contributor-dashboard-card"));
+    let visibleCount = 0;
 
-    if (typeof renderDashboardContributions === "function") {
-      renderDashboardContributions(rows);
+    cards.forEach(card => {
+      const isCompleted = !!card.querySelector(".contributor-dashboard-pill.completed");
+      const shouldShow = filterMode !== "completed" || isCompleted;
+      card.style.display = shouldShow ? "" : "none";
+      if(shouldShow) visibleCount += 1;
+    });
+
+    let empty = document.getElementById("contributorDashboardFilteredEmpty");
+
+    if(filterMode === "completed" && cards.length && visibleCount === 0){
+      if(!empty){
+        empty = document.createElement("div");
+        empty.id = "contributorDashboardFilteredEmpty";
+        empty.className = "contributor-dashboard-empty";
+        empty.textContent = "No completed contributions yet.";
+        list.appendChild(empty);
+      }
+      empty.style.display = "";
+    } else if(empty){
+      empty.style.display = "none";
     }
   }
 
   function wireDashboardFilterButtons(){
     const row = document.getElementById("contributorDashboardFilterRow");
-    if(!row || row.dataset.filterWired === "true") return;
+    if(!row || row.dataset.filterWiredV233 === "true") return;
 
-    row.dataset.filterWired = "true";
+    row.dataset.filterWiredV233 = "true";
 
     row.addEventListener("click", function(event){
       const button = event.target.closest && event.target.closest("[data-dashboard-filter]");
       if(!button) return;
 
-      window.__crowdfunningDashboardFilter = button.getAttribute("data-dashboard-filter") || "all";
+      const filterMode = button.getAttribute("data-dashboard-filter") || "all";
 
       row.querySelectorAll("[data-dashboard-filter]").forEach(btn => {
         btn.classList.toggle("active", btn === button);
       });
 
-      applyDashboardFilter();
+      applyDashboardCardFilter(filterMode);
     });
   }
 
-  document.addEventListener("DOMContentLoaded", wireDashboardFilterButtons);
-  window.addEventListener("load", wireDashboardFilterButtons);
+  // Re-apply the active filter after dashboard cards render.
+  const observer = new MutationObserver(function(){
+    const row = document.getElementById("contributorDashboardFilterRow");
+    if(!row) return;
+
+    const active = row.querySelector("[data-dashboard-filter].active");
+    const filterMode = active ? active.getAttribute("data-dashboard-filter") || "all" : "all";
+    applyDashboardCardFilter(filterMode);
+  });
+
+  function initDashboardFilter(){
+    wireDashboardFilterButtons();
+
+    const list = document.getElementById("contributorDashboardList");
+    if(list && list.dataset.filterObservedV233 !== "true"){
+      list.dataset.filterObservedV233 = "true";
+      observer.observe(list, { childList: true, subtree: true });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", initDashboardFilter);
+  window.addEventListener("load", initDashboardFilter);
 })();
 </script>
 
