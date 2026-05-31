@@ -4641,6 +4641,53 @@ body.light-mode .contributor-dashboard-filter-btn.active {
 }
 </style>
 
+
+<style id="v2-3-4-dashboard-trending">
+/* v2.3.4 — Dashboard TRENDING filter and current-path links */
+
+.contributor-dashboard-pill.trending {
+  color: #ff3df2;
+  border-color: rgba(255,61,242,0.40);
+  background: rgba(255,61,242,0.11);
+}
+
+.contributor-dashboard-trending-box {
+  margin-top: 14px;
+  border: 1px solid rgba(255,61,242,0.24);
+  background: rgba(255,61,242,0.07);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.contributor-dashboard-current-path-link {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 12px;
+  border: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 999px;
+  padding: 10px 13px;
+  background: var(--text);
+  color: var(--bg);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+  text-align: center;
+  touch-action: manipulation;
+}
+
+body.light-mode .contributor-dashboard-current-path-link {
+  background: #0f1419;
+  color: #fff;
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -9994,6 +10041,7 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     <div class="contributor-dashboard-stats" id="contributorDashboardStats"></div>
     <div class="contributor-dashboard-filter-row" id="contributorDashboardFilterRow">
       <button class="contributor-dashboard-filter-btn active" type="button" data-dashboard-filter="all">All</button>
+      <button class="contributor-dashboard-filter-btn" type="button" data-dashboard-filter="trending">Trending</button>
       <button class="contributor-dashboard-filter-btn" type="button" data-dashboard-filter="completed">Completed</button>
     </div>
     <div class="contributor-dashboard-list" id="contributorDashboardList">
@@ -10032,8 +10080,17 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     }
   }
 
+  function isDashboardCurrentlyTrending(row){
+    const score = Number(row.direction_score || row.score || 0);
+    return !row.included_in_completed_path && (
+      !!row.trending_sent_at ||
+      score >= 10
+    );
+  }
+
   function dashboardStatusLabel(row){
     if(row.included_in_completed_path) return "COMPLETED";
+    if(isDashboardCurrentlyTrending(row)) return "TRENDING";
     if(row.submission_status === "approved") return "APPROVED";
     if(row.submission_status === "rejected") return "REJECTED";
     return String(row.submission_status || "PENDING").toUpperCase();
@@ -10041,11 +10098,11 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
 
   function dashboardStatusClass(row){
     if(row.included_in_completed_path) return "completed";
+    if(isDashboardCurrentlyTrending(row)) return "trending";
     if(row.submission_status === "approved") return "approved";
     if(row.submission_status === "rejected") return "rejected";
     return "pending";
   }
-
 
   function completedPathDashboardUrl(row){
     const pathId = row && (row.completed_path_id || row.path_id);
@@ -10084,8 +10141,13 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
       return;
     }
 
-    list.innerHTML = rows.map(row => {
+    window.__crowdfunningDashboardRenderedRows = rows;
+
+    list.innerHTML = rows.map((row, rowIndex) => {
       const content = row.moderated_content || row.submission_content || "Untitled contribution";
+      const isTrending = isDashboardCurrentlyTrending(row);
+      const directionScore = Number(row.direction_score || row.score || 0);
+
       const completedBlock = row.included_in_completed_path ? `
         <div class="contributor-dashboard-completed-box">
           <div class="contributor-dashboard-small-label">Completed Path</div>
@@ -10094,6 +10156,15 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
           <div class="contributor-dashboard-muted">Completed: ${escapeDashboardHtml(dashboardDate(row.completed_at))}</div>
           <div class="contributor-dashboard-muted">Foundation Score: ${escapeDashboardHtml(row.foundation_score ?? "0")}</div>
           <button class="contributor-dashboard-path-link" type="button" data-completed-path-id="${escapeDashboardHtml(row.completed_path_id || row.path_id || "")}">View Completed Path</button>
+        </div>
+      ` : "";
+
+      const trendingBlock = isTrending ? `
+        <div class="contributor-dashboard-trending-box">
+          <div class="contributor-dashboard-small-label">Current Path Progression</div>
+          <div class="contributor-dashboard-completed-title">This contribution is trending</div>
+          <div class="contributor-dashboard-completed-summary">Current score: ${escapeDashboardHtml(String(directionScore))}</div>
+          <button class="contributor-dashboard-current-path-link" type="button" data-dashboard-row-index="${escapeDashboardHtml(String(rowIndex))}">View Current Path</button>
         </div>
       ` : "";
 
@@ -10120,12 +10191,13 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
               <div>${escapeDashboardHtml(dashboardDate(row.approved_sent_at))}</div>
             </div>
             <div>
-              <div class="contributor-dashboard-small-label">Completion Email</div>
-              <div>${escapeDashboardHtml(dashboardDate(row.completed_sent_at))}</div>
+              <div class="contributor-dashboard-small-label">Trending Email</div>
+              <div>${escapeDashboardHtml(dashboardDate(row.trending_sent_at))}</div>
             </div>
           </div>
 
           ${row.llm_reason ? `<p class="contributor-dashboard-reason">${escapeDashboardHtml(row.llm_reason)}</p>` : ""}
+          ${trendingBlock}
           ${completedBlock}
         </article>
       `;
@@ -10276,8 +10348,19 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
 
 
 
-<script id="v2-3-3-dashboard-filter-dom-script">
+
+
+
+<script id="v2-3-4-dashboard-trending-script">
 (function(){
+  function isDashboardCardTrending(card){
+    return !!card.querySelector(".contributor-dashboard-pill.trending");
+  }
+
+  function isDashboardCardCompleted(card){
+    return !!card.querySelector(".contributor-dashboard-pill.completed");
+  }
+
   function applyDashboardCardFilter(filterMode){
     const list = document.getElementById("contributorDashboardList");
     if(!list) return;
@@ -10286,22 +10369,34 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     let visibleCount = 0;
 
     cards.forEach(card => {
-      const isCompleted = !!card.querySelector(".contributor-dashboard-pill.completed");
-      const shouldShow = filterMode !== "completed" || isCompleted;
+      let shouldShow = true;
+
+      if(filterMode === "completed"){
+        shouldShow = isDashboardCardCompleted(card);
+      } else if(filterMode === "trending"){
+        shouldShow = isDashboardCardTrending(card);
+      }
+
       card.style.display = shouldShow ? "" : "none";
       if(shouldShow) visibleCount += 1;
     });
 
     let empty = document.getElementById("contributorDashboardFilteredEmpty");
+    const emptyText =
+      filterMode === "completed"
+        ? "No completed contributions yet."
+        : filterMode === "trending"
+          ? "No currently trending contributions."
+          : "";
 
-    if(filterMode === "completed" && cards.length && visibleCount === 0){
+    if(filterMode !== "all" && cards.length && visibleCount === 0){
       if(!empty){
         empty = document.createElement("div");
         empty.id = "contributorDashboardFilteredEmpty";
         empty.className = "contributor-dashboard-empty";
-        empty.textContent = "No completed contributions yet.";
         list.appendChild(empty);
       }
+      empty.textContent = emptyText;
       empty.style.display = "";
     } else if(empty){
       empty.style.display = "none";
@@ -10310,9 +10405,9 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
 
   function wireDashboardFilterButtons(){
     const row = document.getElementById("contributorDashboardFilterRow");
-    if(!row || row.dataset.filterWiredV233 === "true") return;
+    if(!row || row.dataset.filterWiredV234 === "true") return;
 
-    row.dataset.filterWiredV233 = "true";
+    row.dataset.filterWiredV234 = "true";
 
     row.addEventListener("click", function(event){
       const button = event.target.closest && event.target.closest("[data-dashboard-filter]");
@@ -10328,7 +10423,140 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     });
   }
 
-  // Re-apply the active filter after dashboard cards render.
+  function parsePathItemsMaybe(value){
+    if(!value) return [];
+    if(Array.isArray(value)) return value;
+
+    if(typeof value === "string"){
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch(_) {
+        return [];
+      }
+    }
+
+    return [];
+  }
+
+  function getTrendingProgressionFromRow(row){
+    const pathItems =
+      parsePathItemsMaybe(row.current_path_items) ||
+      parsePathItemsMaybe(row.trending_path_items);
+
+    let progression = Array.isArray(pathItems)
+      ? pathItems.map(item => ({
+          text: item && item.text ? item.text : String(item || ""),
+          originator: item && item.originator ? item.originator : "",
+          optionKey: item && item.optionKey ? item.optionKey : "",
+          directionId: item && (item.directionId || item.direction_id) ? (item.directionId || item.direction_id) : null,
+          parentNodeId: item && (item.parentNodeId || item.parent_node_id) ? (item.parentNodeId || item.parent_node_id) : null,
+          nextNodeId: item && (item.nextNodeId || item.next_node_id) ? (item.nextNodeId || item.next_node_id) : null,
+          nextNodeKey: item && (item.nextNodeKey || item.next_node_key) ? (item.nextNodeKey || item.next_node_key) : ""
+        })).filter(entry => entry.text)
+      : [];
+
+    if(!progression.length){
+      const text = row.moderated_content || row.submission_content || row.direction_content || "";
+      if(text){
+        progression = [{
+          text,
+          originator: row.attribution_handle || "",
+          directionId: row.approved_direction_id || row.direction_id || null,
+          nextNodeId: row.next_node_id || null,
+          nextNodeKey: row.next_node_key || ""
+        }];
+      }
+    }
+
+    return progression;
+  }
+
+  async function openDashboardTrendingCurrentPath(row){
+    if(!row) return;
+
+    const dashboardModal = document.getElementById("contributorDashboardModal");
+    if(dashboardModal) dashboardModal.classList.add("hidden");
+
+    const categoryName = String(row.category_name || row.category_slug || row.submission_type || "JOKE").trim().toUpperCase();
+    const progression = getTrendingProgressionFromRow(row);
+
+    if(typeof state !== "undefined" && state.categories){
+      if(!state.categories[categoryName] && typeof createCategoryState === "function"){
+        state.categories[categoryName] = createCategoryState(categoryName, 0);
+      }
+
+      const cat = state.categories[categoryName];
+
+      if(cat){
+        state.activeCategory = categoryName;
+        cat.name = categoryName;
+        cat.progression = progression;
+        cat.prompt = progression.length ? progression[0].text : (row.submission_content || "Trending contribution");
+        cat.completed = false;
+        cat.phase = "direction_select";
+        cat.foundationSubmitted = true;
+
+        if(typeof setFoundationGatePassed === "function") setFoundationGatePassed(cat, true);
+        if(typeof setFirstFoundationCommitted === "function") setFirstFoundationCommitted(cat, true);
+
+        const last = progression.length ? progression[progression.length - 1] : null;
+        cat.liveCurrentNodeId = row.next_node_id || (last && last.nextNodeId) || null;
+        cat.liveCurrentNodeKey = row.next_node_key || (last && last.nextNodeKey) || "";
+        cat.currentPathId = row.current_path_id || row.path_id || null;
+        cat.currentPathKey = progression.map(entry => entry.directionId || entry.optionKey || entry.text).join(">");
+        cat.pathStatus = "active";
+        cat.frontierOpen = false;
+        cat.frontierSubmitOpen = false;
+        cat.liveLoading = false;
+        cat.liveEntry = null;
+        cat.options = [];
+        cat.preselectedOptionIndex = null;
+        cat.preselectedDirectionId = null;
+        cat.preselectedDirectionText = "";
+        cat.preselectedOptionKey = null;
+
+        if(typeof saveState === "function") saveState();
+        if(typeof showHome === "function") showHome();
+        if(typeof renderProgressionPreview === "function") renderProgressionPreview();
+
+        if(typeof loadLiveEntryForCategory === "function"){
+          try {
+            await loadLiveEntryForCategory(categoryName);
+            if(typeof renderAll === "function") renderAll();
+          } catch(err) {
+            console.warn("CROWD FUNNING: trending current path live load failed:", err);
+          }
+        } else if(typeof renderAll === "function") {
+          renderAll();
+        }
+
+        const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+        return;
+      }
+    }
+
+    if(typeof showHome === "function") showHome();
+  }
+
+  function wireTrendingCurrentPathButtons(){
+    document.addEventListener("click", function(event){
+      const button = event.target.closest && event.target.closest(".contributor-dashboard-current-path-link[data-dashboard-row-index]");
+      if(!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const index = Number(button.getAttribute("data-dashboard-row-index"));
+      const rows = Array.isArray(window.__crowdfunningDashboardRenderedRows)
+        ? window.__crowdfunningDashboardRenderedRows
+        : [];
+
+      openDashboardTrendingCurrentPath(rows[index]);
+    }, true);
+  }
+
   const observer = new MutationObserver(function(){
     const row = document.getElementById("contributorDashboardFilterRow");
     if(!row) return;
@@ -10338,18 +10566,23 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     applyDashboardCardFilter(filterMode);
   });
 
-  function initDashboardFilter(){
+  function initDashboardTrendingFilter(){
     wireDashboardFilterButtons();
 
     const list = document.getElementById("contributorDashboardList");
-    if(list && list.dataset.filterObservedV233 !== "true"){
-      list.dataset.filterObservedV233 = "true";
+    if(list && list.dataset.filterObservedV234 !== "true"){
+      list.dataset.filterObservedV234 = "true";
       observer.observe(list, { childList: true, subtree: true });
+    }
+
+    if(!window.__crowdfunningTrendingButtonsWired){
+      window.__crowdfunningTrendingButtonsWired = true;
+      wireTrendingCurrentPathButtons();
     }
   }
 
-  document.addEventListener("DOMContentLoaded", initDashboardFilter);
-  window.addEventListener("load", initDashboardFilter);
+  document.addEventListener("DOMContentLoaded", initDashboardTrendingFilter);
+  window.addEventListener("load", initDashboardTrendingFilter);
 })();
 </script>
 
