@@ -4688,6 +4688,26 @@ body.light-mode .contributor-dashboard-current-path-link {
 }
 </style>
 
+
+<style id="v2-3-5-dashboard-metrics">
+/* v2.3.5 — Dashboard metrics polish; removes redundant Pending metric */
+@media (max-width: 760px) {
+  .contributor-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contributor-dashboard-stat:last-child {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 761px) {
+  .contributor-dashboard-stats {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -10115,13 +10135,42 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     const el = document.getElementById("contributorDashboardStats");
     if(!el) return;
 
-    const safeStats = stats || {};
+    const contributions = Array.isArray(window.__crowdfunningDashboardContributions)
+      ? window.__crowdfunningDashboardContributions
+      : [];
+
+    const foundations = contributions.filter(row =>
+      String(row.direction_type || row.submission_type || "").toLowerCase() === "foundation"
+    ).length;
+
+    const directions = contributions.filter(row =>
+      String(row.direction_type || row.submission_type || "").toLowerCase() === "direction"
+    ).length;
+
+    const approved = contributions.filter(row =>
+      row.submission_status === "approved" || row.llm_decision === "approve"
+    ).length;
+
+    const trending = contributions.filter(row => {
+      const score = Number(row.direction_score || row.score || 0);
+      return !row.included_in_completed_path && (
+        !!row.trending_sent_at ||
+        score >= 10
+      );
+    }).length;
+
+    const completed = contributions.filter(row =>
+      !!row.included_in_completed_path
+    ).length;
+
+    const fallback = stats || {};
+
     const items = [
-      ["Total", safeStats.total || 0],
-      ["Approved", safeStats.approved || 0],
-      ["Completed", safeStats.completed || 0],
-      ["Pending", safeStats.pending || 0],
-      ["Rejected", safeStats.rejected || 0]
+      ["Foundations", foundations || fallback.foundations || 0],
+      ["Directions", directions || fallback.directions || 0],
+      ["Approved", approved || fallback.approved || 0],
+      ["Trending", trending || fallback.trending || 0],
+      ["Completed", completed || fallback.completed || 0]
     ];
 
     el.innerHTML = items.map(([label, value]) => `
@@ -10241,13 +10290,13 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
       }
 
       if(emailEl) emailEl.textContent = payload.email || "Contributor";
-      renderDashboardStats(payload.stats || {});
       window.__crowdfunningDashboardContributions = payload.contributions || [];
       window.__crowdfunningDashboardFilter = "all";
+      renderDashboardStats(payload.stats || {});
       renderDashboardContributions(window.__crowdfunningDashboardContributions);
     } catch(err) {
       if(emailEl) emailEl.textContent = "Dashboard unavailable";
-      renderDashboardStats({ total:0, approved:0, completed:0, pending:0, rejected:0 });
+      window.__crowdfunningDashboardContributions = []; renderDashboardStats({ foundations:0, directions:0, approved:0, trending:0, completed:0 });
       if(list) {
         list.innerHTML = `<div class="contributor-dashboard-error">${escapeDashboardHtml(err.message || "Dashboard could not be loaded.")}</div>`;
       }
