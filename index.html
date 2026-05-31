@@ -4587,6 +4587,21 @@ body.light-mode .contributor-dashboard-path-link {
 }
 </style>
 
+
+<style id="v2-3-1-dashboard-link-button-fix">
+/* v2.3.1 — Mobile-safe dashboard completed-path open button */
+button.contributor-dashboard-path-link {
+  border: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+  text-align: center;
+  touch-action: manipulation;
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -10035,7 +10050,7 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
           <div class="contributor-dashboard-completed-summary">${escapeDashboardHtml(row.completed_summary || "This contribution became part of a completed path.")}</div>
           <div class="contributor-dashboard-muted">Completed: ${escapeDashboardHtml(dashboardDate(row.completed_at))}</div>
           <div class="contributor-dashboard-muted">Foundation Score: ${escapeDashboardHtml(row.foundation_score ?? "0")}</div>
-          <a class="contributor-dashboard-path-link" href="${escapeDashboardHtml(completedPathDashboardUrl(row))}">View Completed Path</a>
+          <button class="contributor-dashboard-path-link" type="button" data-completed-path-id="${escapeDashboardHtml(row.completed_path_id || row.path_id || "")}">View Completed Path</button>
         </div>
       ` : "";
 
@@ -10139,6 +10154,76 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
 
   window.addEventListener("load", initContributorDashboard);
   document.addEventListener("DOMContentLoaded", initContributorDashboard);
+})();
+</script>
+
+
+<script id="v2-3-1-mobile-dashboard-path-open">
+(function(){
+  async function openDashboardCompletedPathById(pathId){
+    if(!pathId) return;
+
+    const dashboardModal = document.getElementById("contributorDashboardModal");
+    if(dashboardModal) dashboardModal.classList.add("hidden");
+
+    try {
+      if (typeof loadCompletedArchiveFromSupabase === "function") {
+        await loadCompletedArchiveFromSupabase();
+      }
+
+      const archive = (window.state && Array.isArray(window.state.archive))
+        ? window.state.archive
+        : (typeof state !== "undefined" && Array.isArray(state.archive) ? state.archive : []);
+
+      const item = archive.find(entry => String(entry.id || entry.path_id || "") === String(pathId));
+
+      if(item && typeof openCompletedPath === "function"){
+        openCompletedPath(item);
+
+        const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+        return;
+      }
+
+      // Fallback: open the Completed page if exact path matching fails.
+      if(typeof showArchive === "function"){
+        await showArchive();
+      }
+    } catch(err) {
+      console.error("CROWD FUNNING: dashboard completed path open failed:", err);
+      if(typeof showArchive === "function"){
+        await showArchive();
+      }
+    }
+  }
+
+  function wireDashboardCompletedPathButtons(){
+    document.addEventListener("click", function(event){
+      const button = event.target.closest && event.target.closest(".contributor-dashboard-path-link[data-completed-path-id]");
+      if(!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const pathId = button.getAttribute("data-completed-path-id");
+      openDashboardCompletedPathById(pathId);
+    }, true);
+  }
+
+  function openCompletedPathFromUrlIfNeeded(){
+    const params = new URLSearchParams(window.location.search);
+    const pathId = params.get("completed_path_id");
+
+    if(pathId){
+      openDashboardCompletedPathById(pathId);
+    }
+  }
+
+  window.addEventListener("load", openCompletedPathFromUrlIfNeeded);
+  document.addEventListener("DOMContentLoaded", function(){
+    wireDashboardCompletedPathButtons();
+    openCompletedPathFromUrlIfNeeded();
+  });
 })();
 </script>
 
