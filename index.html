@@ -4602,6 +4602,45 @@ button.contributor-dashboard-path-link {
 }
 </style>
 
+
+<style id="v2-3-2-dashboard-filter">
+/* v2.3.2 — Contributor Dashboard ALL / COMPLETED filter */
+
+.contributor-dashboard-filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 4px 0 18px;
+}
+
+.contributor-dashboard-filter-btn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  padding: 9px 12px;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  touch-action: manipulation;
+}
+
+.contributor-dashboard-filter-btn.active {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+body.light-mode .contributor-dashboard-filter-btn.active {
+  background: #0f1419;
+  color: #fff;
+  border-color: #0f1419;
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -9953,6 +9992,10 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     </div>
 
     <div class="contributor-dashboard-stats" id="contributorDashboardStats"></div>
+    <div class="contributor-dashboard-filter-row" id="contributorDashboardFilterRow">
+      <button class="contributor-dashboard-filter-btn active" type="button" data-dashboard-filter="all">All</button>
+      <button class="contributor-dashboard-filter-btn" type="button" data-dashboard-filter="completed">Completed</button>
+    </div>
     <div class="contributor-dashboard-list" id="contributorDashboardList">
       <div class="contributor-dashboard-loading">Loading contribution history...</div>
     </div>
@@ -10127,7 +10170,9 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
 
       if(emailEl) emailEl.textContent = payload.email || "Contributor";
       renderDashboardStats(payload.stats || {});
-      renderDashboardContributions(payload.contributions || []);
+      window.__crowdfunningDashboardContributions = payload.contributions || [];
+      window.__crowdfunningDashboardFilter = "all";
+      renderDashboardContributions(window.__crowdfunningDashboardContributions);
     } catch(err) {
       if(emailEl) emailEl.textContent = "Dashboard unavailable";
       renderDashboardStats({ total:0, approved:0, completed:0, pending:0, rejected:0 });
@@ -10224,6 +10269,51 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     wireDashboardCompletedPathButtons();
     openCompletedPathFromUrlIfNeeded();
   });
+})();
+</script>
+
+
+<script id="v2-3-2-dashboard-filter-script">
+(function(){
+  function getDashboardContributions(){
+    return Array.isArray(window.__crowdfunningDashboardContributions)
+      ? window.__crowdfunningDashboardContributions
+      : [];
+  }
+
+  function applyDashboardFilter(){
+    const currentFilter = window.__crowdfunningDashboardFilter || "all";
+    const rows = currentFilter === "completed"
+      ? getDashboardContributions().filter(row => !!row.included_in_completed_path)
+      : getDashboardContributions();
+
+    if (typeof renderDashboardContributions === "function") {
+      renderDashboardContributions(rows);
+    }
+  }
+
+  function wireDashboardFilterButtons(){
+    const row = document.getElementById("contributorDashboardFilterRow");
+    if(!row || row.dataset.filterWired === "true") return;
+
+    row.dataset.filterWired = "true";
+
+    row.addEventListener("click", function(event){
+      const button = event.target.closest && event.target.closest("[data-dashboard-filter]");
+      if(!button) return;
+
+      window.__crowdfunningDashboardFilter = button.getAttribute("data-dashboard-filter") || "all";
+
+      row.querySelectorAll("[data-dashboard-filter]").forEach(btn => {
+        btn.classList.toggle("active", btn === button);
+      });
+
+      applyDashboardFilter();
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", wireDashboardFilterButtons);
+  window.addEventListener("load", wireDashboardFilterButtons);
 })();
 </script>
 
