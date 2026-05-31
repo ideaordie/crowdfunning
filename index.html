@@ -4215,6 +4215,82 @@ body.light-mode .adult-gate-card {
 }
 </style>
 
+
+<style id="v2-2-8-unsubscribe-popup">
+/* v2.2.8 — unsubscribe confirmation popup */
+
+.unsubscribe-confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(18px);
+}
+
+.unsubscribe-confirm-modal.hidden {
+  display: none !important;
+}
+
+.unsubscribe-confirm-card {
+  width: min(440px, 100%);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-top-color: rgba(255,255,255,0.28);
+  border-radius: 22px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at top left, rgba(255,61,242,0.16), transparent 42%),
+    radial-gradient(circle at top right, rgba(52,233,255,0.12), transparent 38%),
+    linear-gradient(180deg, rgba(18,18,26,0.98), rgba(4,5,8,0.98));
+  color: var(--text);
+  box-shadow: 0 28px 90px rgba(0,0,0,0.62);
+}
+
+body.light-mode .unsubscribe-confirm-card {
+  background:
+    radial-gradient(circle at top left, rgba(255,61,242,0.14), transparent 42%),
+    radial-gradient(circle at top right, rgba(52,160,255,0.15), transparent 38%),
+    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,248,250,0.98));
+  color: #0f1419;
+  border-color: rgba(0,0,0,0.14);
+}
+
+.unsubscribe-confirm-kicker {
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid rgba(52,233,255,0.38);
+  background: rgba(52,233,255,0.12);
+  color: #34e9ff;
+  border-radius: 999px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+}
+
+.unsubscribe-confirm-card h2 {
+  margin: 14px 0 8px;
+  font-size: 24px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.unsubscribe-confirm-card p {
+  margin: 0 0 18px;
+  color: var(--muted);
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+.unsubscribe-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -9513,6 +9589,45 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     </div>
   </div>
 </div>
+
+
+<div class="unsubscribe-confirm-modal hidden" id="unsubscribeConfirmModal" role="dialog" aria-modal="true" aria-labelledby="unsubscribeConfirmTitle">
+  <div class="unsubscribe-confirm-card">
+    <div class="unsubscribe-confirm-kicker">EMAIL UPDATED</div>
+    <h2 id="unsubscribeConfirmTitle">You’re unsubscribed.</h2>
+    <p>You will no longer receive CROWDFUNNING notification emails for that submission.</p>
+    <div class="unsubscribe-confirm-actions">
+      <button class="primary" id="unsubscribeConfirmCloseBtn" type="button">RETURN TO CROWDFUNNING</button>
+    </div>
+  </div>
+</div>
+
+
+<script id="v2-2-8-unsubscribe-popup-script">
+(function(){
+  function showUnsubscribePopupIfNeeded(){
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("unsubscribed") !== "true") return;
+
+    const modal = document.getElementById("unsubscribeConfirmModal");
+    const closeBtn = document.getElementById("unsubscribeConfirmCloseBtn");
+
+    if (!modal || !closeBtn) return;
+
+    modal.classList.remove("hidden");
+
+    closeBtn.addEventListener("click", function(){
+      modal.classList.add("hidden");
+
+      const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }, { once: true });
+  }
+
+  window.addEventListener("load", showUnsubscribePopupIfNeeded);
+  document.addEventListener("DOMContentLoaded", showUnsubscribePopupIfNeeded);
+})();
+</script>
 
 </body>
 </html>
