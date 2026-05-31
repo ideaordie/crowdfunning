@@ -4291,6 +4291,278 @@ body.light-mode .unsubscribe-confirm-card {
 }
 </style>
 
+
+<style id="v2-2-9-contributor-dashboard">
+/* v2.2.9 — Contributor Dashboard frontend UI */
+
+.contributor-dashboard-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,0.76);
+  backdrop-filter: blur(18px);
+}
+
+.contributor-dashboard-modal.hidden {
+  display: none !important;
+}
+
+.contributor-dashboard-shell {
+  width: min(980px, 100%);
+  max-height: min(86vh, 860px);
+  overflow: auto;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(255,61,242,0.16), transparent 34%),
+    radial-gradient(circle at top right, rgba(52,233,255,0.13), transparent 38%),
+    linear-gradient(180deg, rgba(18,18,26,0.98), rgba(4,5,8,0.98));
+  color: var(--text);
+  box-shadow: 0 28px 90px rgba(0,0,0,0.62);
+  padding: 22px;
+}
+
+body.light-mode .contributor-dashboard-shell {
+  background:
+    radial-gradient(circle at top left, rgba(255,61,242,0.12), transparent 34%),
+    radial-gradient(circle at top right, rgba(52,160,255,0.14), transparent 38%),
+    linear-gradient(180deg, rgba(255,255,255,0.99), rgba(245,248,250,0.99));
+  color: #0f1419;
+  border-color: rgba(0,0,0,0.14);
+}
+
+.contributor-dashboard-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.contributor-dashboard-kicker {
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid rgba(52,233,255,0.38);
+  background: rgba(52,233,255,0.12);
+  color: #34e9ff;
+  border-radius: 999px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.contributor-dashboard-title {
+  margin: 12px 0 6px;
+  font-size: clamp(32px, 6vw, 58px);
+  line-height: 0.92;
+  letter-spacing: -0.06em;
+}
+
+.contributor-dashboard-email {
+  color: var(--muted);
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.contributor-dashboard-close {
+  flex: 0 0 auto;
+}
+
+.contributor-dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.contributor-dashboard-stat {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 12px;
+}
+
+body.light-mode .contributor-dashboard-stat {
+  background: rgba(0,0,0,0.04);
+}
+
+.contributor-dashboard-stat-number {
+  font-size: 26px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.contributor-dashboard-stat-label {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.contributor-dashboard-list {
+  display: grid;
+  gap: 12px;
+}
+
+.contributor-dashboard-card {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 16px;
+  background: rgba(255,255,255,0.055);
+}
+
+body.light-mode .contributor-dashboard-card {
+  background: rgba(0,0,0,0.035);
+}
+
+.contributor-dashboard-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.contributor-dashboard-pill {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.07em;
+  border: 1px solid var(--line);
+}
+
+.contributor-dashboard-pill.completed {
+  color: #35f29a;
+  border-color: rgba(53,242,154,0.38);
+  background: rgba(53,242,154,0.10);
+}
+
+.contributor-dashboard-pill.approved {
+  color: #34e9ff;
+  border-color: rgba(52,233,255,0.38);
+  background: rgba(52,233,255,0.10);
+}
+
+.contributor-dashboard-pill.pending {
+  color: #ffd166;
+  border-color: rgba(255,209,102,0.38);
+  background: rgba(255,209,102,0.10);
+}
+
+.contributor-dashboard-pill.rejected {
+  color: #ff6b7a;
+  border-color: rgba(255,107,122,0.38);
+  background: rgba(255,107,122,0.10);
+}
+
+.contributor-dashboard-type {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+}
+
+.contributor-dashboard-card h3 {
+  margin: 0 0 14px;
+  font-size: 22px;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.contributor-dashboard-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.contributor-dashboard-small-label {
+  color: var(--muted);
+  opacity: 0.7;
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.contributor-dashboard-reason {
+  color: var(--muted);
+  margin: 14px 0 0;
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+.contributor-dashboard-completed-box {
+  margin-top: 14px;
+  border: 1px solid rgba(53,242,154,0.22);
+  background: rgba(53,242,154,0.07);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.contributor-dashboard-completed-title {
+  font-size: 16px;
+  font-weight: 1000;
+  margin-bottom: 6px;
+}
+
+.contributor-dashboard-completed-summary {
+  line-height: 1.4;
+  font-weight: 750;
+  margin-bottom: 8px;
+}
+
+.contributor-dashboard-muted {
+  color: var(--muted);
+}
+
+.contributor-dashboard-empty,
+.contributor-dashboard-error,
+.contributor-dashboard-loading {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 16px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.05);
+  font-weight: 850;
+}
+
+@media (max-width: 760px) {
+  .contributor-dashboard-shell {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .contributor-dashboard-top {
+    flex-direction: column;
+  }
+
+  .contributor-dashboard-close {
+    width: 100%;
+  }
+
+  .contributor-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contributor-dashboard-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -9626,6 +9898,214 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
 
   window.addEventListener("load", showUnsubscribePopupIfNeeded);
   document.addEventListener("DOMContentLoaded", showUnsubscribePopupIfNeeded);
+})();
+</script>
+
+
+<div class="contributor-dashboard-modal hidden" id="contributorDashboardModal" role="dialog" aria-modal="true" aria-labelledby="contributorDashboardTitle">
+  <div class="contributor-dashboard-shell">
+    <div class="contributor-dashboard-top">
+      <div>
+        <div class="contributor-dashboard-kicker">Contributor Dashboard</div>
+        <h2 class="contributor-dashboard-title" id="contributorDashboardTitle">My Contributions</h2>
+        <div class="contributor-dashboard-email" id="contributorDashboardEmail">Loading...</div>
+      </div>
+      <button class="nav-btn contributor-dashboard-close" id="contributorDashboardCloseBtn" type="button">CLOSE</button>
+    </div>
+
+    <div class="contributor-dashboard-stats" id="contributorDashboardStats"></div>
+    <div class="contributor-dashboard-list" id="contributorDashboardList">
+      <div class="contributor-dashboard-loading">Loading contribution history...</div>
+    </div>
+  </div>
+</div>
+
+
+<script id="v2-2-9-contributor-dashboard-script">
+(function(){
+  const CONTRIBUTOR_DASHBOARD_FUNCTION_URL =
+    "https://asfrvwhoixkwddfypncd.supabase.co/functions/v1/contributor-dashboard";
+
+  function escapeDashboardHtml(value){
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function dashboardDate(value){
+    if(!value) return "—";
+    try {
+      return new Date(value).toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    } catch(err) {
+      return String(value);
+    }
+  }
+
+  function dashboardStatusLabel(row){
+    if(row.included_in_completed_path) return "COMPLETED";
+    if(row.submission_status === "approved") return "APPROVED";
+    if(row.submission_status === "rejected") return "REJECTED";
+    return String(row.submission_status || "PENDING").toUpperCase();
+  }
+
+  function dashboardStatusClass(row){
+    if(row.included_in_completed_path) return "completed";
+    if(row.submission_status === "approved") return "approved";
+    if(row.submission_status === "rejected") return "rejected";
+    return "pending";
+  }
+
+  function renderDashboardStats(stats){
+    const el = document.getElementById("contributorDashboardStats");
+    if(!el) return;
+
+    const safeStats = stats || {};
+    const items = [
+      ["Total", safeStats.total || 0],
+      ["Approved", safeStats.approved || 0],
+      ["Completed", safeStats.completed || 0],
+      ["Pending", safeStats.pending || 0],
+      ["Rejected", safeStats.rejected || 0]
+    ];
+
+    el.innerHTML = items.map(([label, value]) => `
+      <div class="contributor-dashboard-stat">
+        <div class="contributor-dashboard-stat-number">${escapeDashboardHtml(value)}</div>
+        <div class="contributor-dashboard-stat-label">${escapeDashboardHtml(label)}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderDashboardContributions(rows){
+    const list = document.getElementById("contributorDashboardList");
+    if(!list) return;
+
+    if(!rows || !rows.length){
+      list.innerHTML = `<div class="contributor-dashboard-empty">No contributions found for this dashboard link yet.</div>`;
+      return;
+    }
+
+    list.innerHTML = rows.map(row => {
+      const content = row.moderated_content || row.submission_content || "Untitled contribution";
+      const completedBlock = row.included_in_completed_path ? `
+        <div class="contributor-dashboard-completed-box">
+          <div class="contributor-dashboard-small-label">Completed Path</div>
+          <div class="contributor-dashboard-completed-title">${escapeDashboardHtml(row.completed_name || row.category_name || "Completed Path")}</div>
+          <div class="contributor-dashboard-completed-summary">${escapeDashboardHtml(row.completed_summary || "This contribution became part of a completed path.")}</div>
+          <div class="contributor-dashboard-muted">Completed: ${escapeDashboardHtml(dashboardDate(row.completed_at))}</div>
+          <div class="contributor-dashboard-muted">Foundation Score: ${escapeDashboardHtml(row.foundation_score ?? "0")}</div>
+        </div>
+      ` : "";
+
+      return `
+        <article class="contributor-dashboard-card">
+          <div class="contributor-dashboard-card-top">
+            <span class="contributor-dashboard-pill ${dashboardStatusClass(row)}">${escapeDashboardHtml(dashboardStatusLabel(row))}</span>
+            <span class="contributor-dashboard-type">${escapeDashboardHtml(String(row.submission_type || "submission").toUpperCase())}</span>
+          </div>
+
+          <h3>${escapeDashboardHtml(content)}</h3>
+
+          <div class="contributor-dashboard-meta-grid">
+            <div>
+              <div class="contributor-dashboard-small-label">Submitted</div>
+              <div>${escapeDashboardHtml(dashboardDate(row.notification_created_at))}</div>
+            </div>
+            <div>
+              <div class="contributor-dashboard-small-label">Reviewed</div>
+              <div>${escapeDashboardHtml(dashboardDate(row.reviewed_at))}</div>
+            </div>
+            <div>
+              <div class="contributor-dashboard-small-label">Approval Email</div>
+              <div>${escapeDashboardHtml(dashboardDate(row.approved_sent_at))}</div>
+            </div>
+            <div>
+              <div class="contributor-dashboard-small-label">Completion Email</div>
+              <div>${escapeDashboardHtml(dashboardDate(row.completed_sent_at))}</div>
+            </div>
+          </div>
+
+          ${row.llm_reason ? `<p class="contributor-dashboard-reason">${escapeDashboardHtml(row.llm_reason)}</p>` : ""}
+          ${completedBlock}
+        </article>
+      `;
+    }).join("");
+  }
+
+  function openContributorDashboard(){
+    const modal = document.getElementById("contributorDashboardModal");
+    if(modal) modal.classList.remove("hidden");
+  }
+
+  function closeContributorDashboard(){
+    const modal = document.getElementById("contributorDashboardModal");
+    if(modal) modal.classList.add("hidden");
+
+    const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+
+  async function loadContributorDashboard(token){
+    const emailEl = document.getElementById("contributorDashboardEmail");
+    const list = document.getElementById("contributorDashboardList");
+
+    openContributorDashboard();
+
+    if(emailEl) emailEl.textContent = "Loading...";
+    if(list) list.innerHTML = `<div class="contributor-dashboard-loading">Loading contribution history...</div>`;
+
+    try {
+      const response = await fetch(`${CONTRIBUTOR_DASHBOARD_FUNCTION_URL}?token=${encodeURIComponent(token)}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      const payload = await response.json();
+
+      if(!response.ok || !payload.ok){
+        throw new Error(payload.error || "Dashboard could not be loaded.");
+      }
+
+      if(emailEl) emailEl.textContent = payload.email || "Contributor";
+      renderDashboardStats(payload.stats || {});
+      renderDashboardContributions(payload.contributions || []);
+    } catch(err) {
+      if(emailEl) emailEl.textContent = "Dashboard unavailable";
+      renderDashboardStats({ total:0, approved:0, completed:0, pending:0, rejected:0 });
+      if(list) {
+        list.innerHTML = `<div class="contributor-dashboard-error">${escapeDashboardHtml(err.message || "Dashboard could not be loaded.")}</div>`;
+      }
+    }
+  }
+
+  function initContributorDashboard(){
+    const closeBtn = document.getElementById("contributorDashboardCloseBtn");
+    if(closeBtn && closeBtn.dataset.dashboardWired !== "true"){
+      closeBtn.dataset.dashboardWired = "true";
+      closeBtn.addEventListener("click", closeContributorDashboard);
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("dashboard_token");
+
+    if(token){
+      loadContributorDashboard(token);
+    }
+  }
+
+  window.addEventListener("load", initContributorDashboard);
+  document.addEventListener("DOMContentLoaded", initContributorDashboard);
 })();
 </script>
 
