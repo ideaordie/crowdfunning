@@ -4563,6 +4563,30 @@ body.light-mode .contributor-dashboard-card {
 }
 </style>
 
+
+<style id="v2-3-0-dashboard-completed-links">
+/* v2.3.0 — dashboard completed-path links */
+.contributor-dashboard-path-link {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 12px;
+  border-radius: 999px;
+  padding: 10px 13px;
+  background: var(--text);
+  color: var(--bg);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+body.light-mode .contributor-dashboard-path-link {
+  background: #0f1419;
+  color: #fff;
+}
+</style>
+
 </head>
 <body class="neutral-accent">
   <main class="app">
@@ -9964,6 +9988,14 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     return "pending";
   }
 
+
+  function completedPathDashboardUrl(row){
+    const pathId = row && (row.completed_path_id || row.path_id);
+    const baseUrl = window.location.origin + window.location.pathname;
+    if(!pathId) return baseUrl + "?view=completed";
+    return baseUrl + "?view=completed&completed_path_id=" + encodeURIComponent(pathId);
+  }
+
   function renderDashboardStats(stats){
     const el = document.getElementById("contributorDashboardStats");
     if(!el) return;
@@ -10003,6 +10035,7 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
           <div class="contributor-dashboard-completed-summary">${escapeDashboardHtml(row.completed_summary || "This contribution became part of a completed path.")}</div>
           <div class="contributor-dashboard-muted">Completed: ${escapeDashboardHtml(dashboardDate(row.completed_at))}</div>
           <div class="contributor-dashboard-muted">Foundation Score: ${escapeDashboardHtml(row.foundation_score ?? "0")}</div>
+          <a class="contributor-dashboard-path-link" href="${escapeDashboardHtml(completedPathDashboardUrl(row))}">View Completed Path</a>
         </div>
       ` : "";
 
