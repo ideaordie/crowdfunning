@@ -5993,7 +5993,15 @@ body.light-mode .contributor-dashboard-current-path-link {
             <div class="submit-new-path-note">Don’t like these options? Add another possibility for this point in the path.</div>
             
           `;
-          submitCard.addEventListener("click", () => openFrontierSubmission());
+          submitCard.addEventListener("click", async () => {
+            if (submitCard.dataset.submittingNewPath === "true") return;
+            submitCard.dataset.submittingNewPath = "true";
+            try {
+              await openFrontierSubmission();
+            } finally {
+              submitCard.dataset.submittingNewPath = "false";
+            }
+          });
           options.appendChild(submitCard);
         }
       } else {
@@ -6029,9 +6037,59 @@ body.light-mode .contributor-dashboard-current-path-link {
       renderCategoryProgress();
     }
 
-    function openFrontierSubmission() {
+    async function downvoteVisibleAvailablePathsForNewSubmission(cat) {
+      if (!cat || !cat.liveEntry || cat.phase === "foundation_select") return false;
+
+      const visibleOptions = Array.isArray(cat.options)
+        ? cat.options.slice(0, 2)
+        : [];
+
+      const visibleDirectionIds = visibleOptions
+        .map(opt => opt && opt.liveDirectionId)
+        .filter(Boolean);
+
+      if (!visibleDirectionIds.length) return false;
+
+      const nodeKey = cat.liveEntry.nodeId || cat.liveCurrentNodeId || "unknown-node";
+      const downvoteKey = `${nodeKey}:${visibleDirectionIds.join(",")}`;
+
+      if (cat.lastSubmitNewPathDownvoteKey === downvoteKey) {
+        return false;
+      }
+
+      try {
+        const { error } = await crowdFunningSupabase.rpc("downvote_visible_directions", {
+          p_visible_direction_ids: visibleDirectionIds
+        });
+
+        if (error) {
+          console.error("CROWD FUNNING: submit-new-path downvote failed:", error);
+          return false;
+        }
+
+        cat.lastSubmitNewPathDownvoteKey = downvoteKey;
+
+        visibleOptions.forEach(opt => {
+          if (!opt) return;
+          if (typeof opt.score === "number") opt.score -= 1;
+          else opt.down = Number(opt.down || 0) + 1;
+
+          if (typeof opt.selectionCount === "number") opt.selectionCount += 1;
+        });
+
+        console.log("CROWD FUNNING: visible available paths downvoted for new path submission:", visibleDirectionIds);
+        return true;
+      } catch (err) {
+        console.error("CROWD FUNNING: unexpected submit-new-path downvote error:", err);
+        return false;
+      }
+    }
+
+    async function openFrontierSubmission() {
       const cat = state.categories[state.activeCategory];
       if (!cat || cat.completed) return false;
+
+      await downvoteVisibleAvailablePathsForNewSubmission(cat);
 
       cat.preselectedOptionIndex = null;
       cat.preselectedDirectionId = null;
