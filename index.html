@@ -10448,63 +10448,87 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
 
 
 
-<script id="v2-3-4-dashboard-trending-script">
+
+
+
+<script id="v2-3-7-dashboard-filter-freeze-fix">
 (function(){
-  function isDashboardCardTrending(card){
-    return !!card.querySelector(".contributor-dashboard-pill.trending");
+  let dashboardFilterApplying = false;
+
+  function cardMatchesFilter(card, filterMode){
+    if(filterMode === "completed"){
+      return !!card.querySelector(".contributor-dashboard-pill.completed");
+    }
+
+    if(filterMode === "trending"){
+      return !!card.querySelector(".contributor-dashboard-pill.trending");
+    }
+
+    return true;
   }
 
-  function isDashboardCardCompleted(card){
-    return !!card.querySelector(".contributor-dashboard-pill.completed");
+  function getActiveDashboardFilter(){
+    const row = document.getElementById("contributorDashboardFilterRow");
+    if(!row) return "all";
+
+    const active = row.querySelector("[data-dashboard-filter].active");
+    return active ? active.getAttribute("data-dashboard-filter") || "all" : "all";
   }
 
-  function applyDashboardCardFilter(filterMode){
-    const list = document.getElementById("contributorDashboardList");
-    if(!list) return;
-
-    const cards = Array.from(list.querySelectorAll(".contributor-dashboard-card"));
-    let visibleCount = 0;
-
-    cards.forEach(card => {
-      let shouldShow = true;
-
-      if(filterMode === "completed"){
-        shouldShow = isDashboardCardCompleted(card);
-      } else if(filterMode === "trending"){
-        shouldShow = isDashboardCardTrending(card);
-      }
-
-      card.style.display = shouldShow ? "" : "none";
-      if(shouldShow) visibleCount += 1;
-    });
-
+  function setDashboardEmptyMessage(list, filterMode, visibleCount, totalCards){
     let empty = document.getElementById("contributorDashboardFilteredEmpty");
-    const emptyText =
+
+    if(filterMode === "all" || !totalCards || visibleCount > 0){
+      if(empty) empty.remove();
+      return;
+    }
+
+    const message =
       filterMode === "completed"
         ? "No completed contributions yet."
         : filterMode === "trending"
           ? "No currently trending contributions."
-          : "";
+          : "No contributions found for this filter.";
 
-    if(filterMode !== "all" && cards.length && visibleCount === 0){
-      if(!empty){
-        empty = document.createElement("div");
-        empty.id = "contributorDashboardFilteredEmpty";
-        empty.className = "contributor-dashboard-empty";
-        list.appendChild(empty);
-      }
-      empty.textContent = emptyText;
-      empty.style.display = "";
-    } else if(empty){
-      empty.style.display = "none";
+    if(!empty){
+      empty = document.createElement("div");
+      empty.id = "contributorDashboardFilteredEmpty";
+      empty.className = "contributor-dashboard-empty";
+      list.appendChild(empty);
+    }
+
+    empty.textContent = message;
+  }
+
+  function applyDashboardCardFilter(filterMode){
+    if(dashboardFilterApplying) return;
+    dashboardFilterApplying = true;
+
+    try {
+      const list = document.getElementById("contributorDashboardList");
+      if(!list) return;
+
+      const cards = Array.from(list.querySelectorAll(".contributor-dashboard-card"));
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const shouldShow = cardMatchesFilter(card, filterMode);
+        card.hidden = !shouldShow;
+        card.style.display = shouldShow ? "" : "none";
+        if(shouldShow) visibleCount += 1;
+      });
+
+      setDashboardEmptyMessage(list, filterMode, visibleCount, cards.length);
+    } finally {
+      dashboardFilterApplying = false;
     }
   }
 
   function wireDashboardFilterButtons(){
     const row = document.getElementById("contributorDashboardFilterRow");
-    if(!row || row.dataset.filterWiredV234 === "true") return;
+    if(!row || row.dataset.filterWiredV237 === "true") return;
 
-    row.dataset.filterWiredV234 = "true";
+    row.dataset.filterWiredV237 = "true";
 
     row.addEventListener("click", function(event){
       const button = event.target.closest && event.target.closest("[data-dashboard-filter]");
@@ -10520,166 +10544,39 @@ box-shadow:0 0 18px rgba(255,255,255,0.06) !important;
     });
   }
 
-  function parsePathItemsMaybe(value){
-    if(!value) return [];
-    if(Array.isArray(value)) return value;
-
-    if(typeof value === "string"){
-      try {
-        const parsed = JSON.parse(value);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch(_) {
-        return [];
-      }
-    }
-
-    return [];
-  }
-
-  function getTrendingProgressionFromRow(row){
-    const pathItems =
-      parsePathItemsMaybe(row.current_path_items) ||
-      parsePathItemsMaybe(row.trending_path_items);
-
-    let progression = Array.isArray(pathItems)
-      ? pathItems.map(item => ({
-          text: item && item.text ? item.text : String(item || ""),
-          originator: item && item.originator ? item.originator : "",
-          optionKey: item && item.optionKey ? item.optionKey : "",
-          directionId: item && (item.directionId || item.direction_id) ? (item.directionId || item.direction_id) : null,
-          parentNodeId: item && (item.parentNodeId || item.parent_node_id) ? (item.parentNodeId || item.parent_node_id) : null,
-          nextNodeId: item && (item.nextNodeId || item.next_node_id) ? (item.nextNodeId || item.next_node_id) : null,
-          nextNodeKey: item && (item.nextNodeKey || item.next_node_key) ? (item.nextNodeKey || item.next_node_key) : ""
-        })).filter(entry => entry.text)
-      : [];
-
-    if(!progression.length){
-      const text = row.moderated_content || row.submission_content || row.direction_content || "";
-      if(text){
-        progression = [{
-          text,
-          originator: row.attribution_handle || "",
-          directionId: row.approved_direction_id || row.direction_id || null,
-          nextNodeId: row.next_node_id || null,
-          nextNodeKey: row.next_node_key || ""
-        }];
-      }
-    }
-
-    return progression;
-  }
-
-  async function openDashboardTrendingCurrentPath(row){
-    if(!row) return;
-
-    const dashboardModal = document.getElementById("contributorDashboardModal");
-    if(dashboardModal) dashboardModal.classList.add("hidden");
-
-    const categoryName = String(row.category_name || row.category_slug || row.submission_type || "JOKE").trim().toUpperCase();
-    const progression = getTrendingProgressionFromRow(row);
-
-    if(typeof state !== "undefined" && state.categories){
-      if(!state.categories[categoryName] && typeof createCategoryState === "function"){
-        state.categories[categoryName] = createCategoryState(categoryName, 0);
-      }
-
-      const cat = state.categories[categoryName];
-
-      if(cat){
-        state.activeCategory = categoryName;
-        cat.name = categoryName;
-        cat.progression = progression;
-        cat.prompt = progression.length ? progression[0].text : (row.submission_content || "Trending contribution");
-        cat.completed = false;
-        cat.phase = "direction_select";
-        cat.foundationSubmitted = true;
-
-        if(typeof setFoundationGatePassed === "function") setFoundationGatePassed(cat, true);
-        if(typeof setFirstFoundationCommitted === "function") setFirstFoundationCommitted(cat, true);
-
-        const last = progression.length ? progression[progression.length - 1] : null;
-        cat.liveCurrentNodeId = row.next_node_id || (last && last.nextNodeId) || null;
-        cat.liveCurrentNodeKey = row.next_node_key || (last && last.nextNodeKey) || "";
-        cat.currentPathId = row.current_path_id || row.path_id || null;
-        cat.currentPathKey = progression.map(entry => entry.directionId || entry.optionKey || entry.text).join(">");
-        cat.pathStatus = "active";
-        cat.frontierOpen = false;
-        cat.frontierSubmitOpen = false;
-        cat.liveLoading = false;
-        cat.liveEntry = null;
-        cat.options = [];
-        cat.preselectedOptionIndex = null;
-        cat.preselectedDirectionId = null;
-        cat.preselectedDirectionText = "";
-        cat.preselectedOptionKey = null;
-
-        if(typeof saveState === "function") saveState();
-        if(typeof showHome === "function") showHome();
-        if(typeof renderProgressionPreview === "function") renderProgressionPreview();
-
-        if(typeof loadLiveEntryForCategory === "function"){
-          try {
-            await loadLiveEntryForCategory(categoryName);
-            if(typeof renderAll === "function") renderAll();
-          } catch(err) {
-            console.warn("CROWD FUNNING: trending current path live load failed:", err);
-          }
-        } else if(typeof renderAll === "function") {
-          renderAll();
-        }
-
-        const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
-        window.history.replaceState({}, document.title, cleanUrl);
-        return;
-      }
-    }
-
-    if(typeof showHome === "function") showHome();
-  }
-
-  function wireTrendingCurrentPathButtons(){
-    document.addEventListener("click", function(event){
-      const button = event.target.closest && event.target.closest(".contributor-dashboard-current-path-link[data-dashboard-row-index]");
-      if(!button) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-
-      const index = Number(button.getAttribute("data-dashboard-row-index"));
-      const rows = Array.isArray(window.__crowdfunningDashboardRenderedRows)
-        ? window.__crowdfunningDashboardRenderedRows
-        : [];
-
-      openDashboardTrendingCurrentPath(rows[index]);
-    }, true);
-  }
-
-  const observer = new MutationObserver(function(){
-    const row = document.getElementById("contributorDashboardFilterRow");
-    if(!row) return;
-
-    const active = row.querySelector("[data-dashboard-filter].active");
-    const filterMode = active ? active.getAttribute("data-dashboard-filter") || "all" : "all";
-    applyDashboardCardFilter(filterMode);
-  });
-
-  function initDashboardTrendingFilter(){
+  function initDashboardFilterFix(){
     wireDashboardFilterButtons();
 
     const list = document.getElementById("contributorDashboardList");
-    if(list && list.dataset.filterObservedV234 !== "true"){
-      list.dataset.filterObservedV234 = "true";
-      observer.observe(list, { childList: true, subtree: true });
-    }
+    if(list && list.dataset.filterFreezeFixObserved !== "true"){
+      list.dataset.filterFreezeFixObserved = "true";
 
-    if(!window.__crowdfunningTrendingButtonsWired){
-      window.__crowdfunningTrendingButtonsWired = true;
-      wireTrendingCurrentPathButtons();
+      const observer = new MutationObserver(function(mutations){
+        if(dashboardFilterApplying) return;
+
+        const hasCardMutation = mutations.some(mutation =>
+          Array.from(mutation.addedNodes || []).some(node =>
+            node.nodeType === 1 &&
+            (
+              node.classList?.contains("contributor-dashboard-card") ||
+              node.querySelector?.(".contributor-dashboard-card")
+            )
+          )
+        );
+
+        if(hasCardMutation){
+          requestAnimationFrame(function(){
+            applyDashboardCardFilter(getActiveDashboardFilter());
+          });
+        }
+      });
+
+      observer.observe(list, { childList: true });
     }
   }
 
-  document.addEventListener("DOMContentLoaded", initDashboardTrendingFilter);
-  window.addEventListener("load", initDashboardTrendingFilter);
+  document.addEventListener("DOMContentLoaded", initDashboardFilterFix);
+  window.addEventListener("load", initDashboardFilterFix);
 })();
 </script>
 
