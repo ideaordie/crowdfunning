@@ -5925,7 +5925,7 @@ body.light-mode .contributor-dashboard-current-path-link {
         : `Pick the strongest direction. Your choice upvotes it and pressures the others toward collapse.`;
 
       if (cat.completeVoteSubmitted && !cat.completed) {
-        options.innerHTML = `<div class="empty">${name} COMPLETE vote recorded. This completion attempt is closed for this session.</div>`;
+        options.innerHTML = `<div class="empty">${name} COMPLETE vote recorded. This completion attempt is closed for this session. RESET to start a new path.</div>`;
       } else if (!cat.frontierOpen) {
         optionModeLabel.textContent = cat.phase === "foundation_select" ? "TRENDING FOUNDATIONS" : "NEXT AVAILABLE DIRECTIONS";
         const visibleOptions = cat.phase === "foundation_select"
